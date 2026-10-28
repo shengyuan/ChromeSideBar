@@ -75,6 +75,7 @@ Shared state is owned by the service worker; the sidebar never writes those stor
 - Before loops and sizable `if` blocks, add a short comment explaining what the loop/block is for
 - Prefer classes with descriptive methods over raw data structures (Records, Maps, plain objects). If code skips a high-level concept and directly manipulates low-level primitives (e.g. `Object.entries(x).filter(...)`, `map.get(key)!.field`), wrap it in a class that expresses the intent
 - Follow `docs/coding-guideline.md` for Chrome API pitfalls. Most important: always pass `windowId` to `chrome.tabs.create()` / `tabGroups.query()` and `createProperties.windowId` to `chrome.tabs.group()`. Otherwise Chrome acts on the focused window instead of the sidebar's window. Also keep service worker state in `chrome.storage.session`, since in-memory state is lost when the worker idles.
+- Never hardcode the top-level bookmark folder ids `'1'` / `'2'` / `'3'` or their English titles. Since Chrome 134 they can be other ids (e.g. account bookmarks `'809'` / `'810'`, with no node `'2'`), and titles are localized (其他書籤). Use `src/utils/bookmarkRoots.ts` (`findRootFolder`, `requireRootFolder`, `isRootFolder`).
 
 ## Shared Utilities
 

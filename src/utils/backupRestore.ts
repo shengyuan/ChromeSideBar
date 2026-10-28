@@ -1,6 +1,13 @@
 import { PinnedSite } from '../hooks/usePinnedSites';
 import { Space } from '../contexts/SpacesContext';
 import { isEmoji } from './emoji';
+import {
+  DEFAULT_ROOT_FOLDER_TITLES,
+  findRootFolder,
+  getRootFolders,
+  getRootFolderType,
+  RootFolderType,
+} from './bookmarkRoots';
 
 // Convert PascalCase to kebab-case — used only for v1 backup migration
 function toKebabCase(name: string): string
@@ -283,66 +290,72 @@ export async function importFullBackup(
 
     const searchArray = rootNode?.children || backup.bookmarks;
 
-    // Match root folders by ID - stable across platforms and locales
-    // "1" = Bookmarks Bar, "2" = Other Bookmarks, "3" = Mobile Bookmarks
-    const bookmarkBar = searchArray.find(n => n.id === '1');
-    const otherBookmarks = searchArray.find(n => n.id === '2');
-    const mobileBookmarks = searchArray.find(n => n.id === '3');
+    // Match the backup's top-level folders by type, not by id: a backup from
+    // a newer Chrome can have ids like '809', and so can this browser. A
+    // backup may also hold two folders of one type (local + account copy).
+    const sourceRoots = searchArray
+      .map(node => ({ node, type: getRootFolderType(node, searchArray) }))
+      .filter((r): r is { node: chrome.bookmarks.BookmarkTreeNode; type: RootFolderType } => r.type !== undefined);
+
+    const liveRoots = await getRootFolders();
+    const liveOther = findRootFolder(liveRoots, 'other');
+    if (!liveOther) {
+      throw new Error('Cannot find the "Other Bookmarks" folder to import into');
+    }
 
     if (options.bookmarkMode === 'replace') {
-      // Clear and replace existing bookmarks
-      if (bookmarkBar?.children) {
-        await clearBookmarkFolder('1');
-        for (const child of bookmarkBar.children) {
-          result.bookmarksCount += await importBookmarkNode(child, '1');
+      // Clear every target folder first (once, even if two source copies map
+      // to it), so a fallback folder created below can't be wiped by a later clear
+      const clearedTargetIds = new Set<string>();
+      for (const { node: source, type } of sourceRoots) {
+        const target = findRootFolder(liveRoots, type);
+        if (source.children && target && !clearedTargetIds.has(target.id)) {
+          await clearBookmarkFolder(target.id);
+          clearedTargetIds.add(target.id);
         }
       }
-      if (otherBookmarks?.children) {
-        await clearBookmarkFolder('2');
-        for (const child of otherBookmarks.children) {
-          result.bookmarksCount += await importBookmarkNode(child, '2');
+
+      // Import each top-level folder into the folder of the same type here
+      for (const { node: source, type } of sourceRoots) {
+        if (!source.children) continue;
+
+        let targetId: string;
+        const target = findRootFolder(liveRoots, type);
+        if (target) {
+          targetId = target.id;
+        } else {
+          if (source.children.length === 0) continue;
+          // This browser has no folder of that type (e.g. no Mobile Bookmarks):
+          // keep its contents in a subfolder of Other Bookmarks instead
+          const fallbackFolder = await chrome.bookmarks.create({
+            parentId: liveOther.id,
+            title: source.title || DEFAULT_ROOT_FOLDER_TITLES[type],
+          });
+          targetId = fallbackFolder.id;
         }
-      }
-      if (mobileBookmarks?.children) {
-        await clearBookmarkFolder('3');
-        for (const child of mobileBookmarks.children) {
-          result.bookmarksCount += await importBookmarkNode(child, '3');
+
+        for (const child of source.children) {
+          result.bookmarksCount += await importBookmarkNode(child, targetId);
         }
       }
     } else {
       // Create in "Other Bookmarks" as a subfolder
       const dateStr = new Date().toLocaleDateString();
       const importFolder = await chrome.bookmarks.create({
-        parentId: '2', // Other Bookmarks
+        parentId: liveOther.id,
         title: `Imported Bookmarks ${dateStr}`,
       });
 
       // Create subfolders for each root folder to preserve structure
-      if (bookmarkBar?.children && bookmarkBar.children.length > 0) {
-        const barFolder = await chrome.bookmarks.create({
+      for (const { node: source, type } of sourceRoots) {
+        if (!source.children || source.children.length === 0) continue;
+
+        const subfolder = await chrome.bookmarks.create({
           parentId: importFolder.id,
-          title: bookmarkBar.title || 'Bookmarks Bar',
+          title: source.title || DEFAULT_ROOT_FOLDER_TITLES[type],
         });
-        for (const child of bookmarkBar.children) {
-          result.bookmarksCount += await importBookmarkNode(child, barFolder.id);
-        }
-      }
-      if (otherBookmarks?.children && otherBookmarks.children.length > 0) {
-        const otherFolder = await chrome.bookmarks.create({
-          parentId: importFolder.id,
-          title: otherBookmarks.title || 'Other Bookmarks',
-        });
-        for (const child of otherBookmarks.children) {
-          result.bookmarksCount += await importBookmarkNode(child, otherFolder.id);
-        }
-      }
-      if (mobileBookmarks?.children && mobileBookmarks.children.length > 0) {
-        const mobileFolder = await chrome.bookmarks.create({
-          parentId: importFolder.id,
-          title: mobileBookmarks.title || 'Mobile Bookmarks',
-        });
-        for (const child of mobileBookmarks.children) {
-          result.bookmarksCount += await importBookmarkNode(child, mobileFolder.id);
+        for (const child of source.children) {
+          result.bookmarksCount += await importBookmarkNode(child, subfolder.id);
         }
       }
     }

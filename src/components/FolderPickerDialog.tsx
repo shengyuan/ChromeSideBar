@@ -5,11 +5,7 @@ import { SpaceFolderIcon } from './SpaceFolderIcon';
 import { Dialog } from './Dialog';
 import { TreeRow } from './TreeRow';
 import { Folder, FolderPlus } from 'lucide-react';
-
-// Standard Chrome bookmark folder IDs
-const BOOKMARKS_BAR_ID = '1';
-const OTHER_BOOKMARKS_ID = '2';
-const MOBILE_BOOKMARKS_ID = '3';
+import { findRootFolder, getRootFolders, ROOT_NODE_ID } from '../utils/bookmarkRoots';
 
 interface FolderPickerDialogProps
 {
@@ -192,13 +188,10 @@ export const FolderPickerDialog = ({
     return folderIdToSpace.get(folderId);
   }, [folderIdToSpace]);
 
-  // Default expand Bookmarks Bar and Other Bookmarks, select Other Bookmarks by default
-  const [expandedState, setExpandedState] = useState<Record<string, boolean>>({
-    [BOOKMARKS_BAR_ID]: true,
-    [OTHER_BOOKMARKS_ID]: true,
-    [MOBILE_BOOKMARKS_ID]: false
-  });
-  const [selectedFolderId, setSelectedFolderId] = useState<string>(OTHER_BOOKMARKS_ID);
+  // Filled in when the dialog opens: Bookmarks Bar and Other Bookmarks
+  // expanded, Other Bookmarks selected (their ids are looked up, not fixed)
+  const [expandedState, setExpandedState] = useState<Record<string, boolean>>({});
+  const [selectedFolderId, setSelectedFolderId] = useState<string>('');
 
   // Track folder to scroll to after tree expands
   const [pendingScrollFolderId, setPendingScrollFolderId] = useState<string | null>(null);
@@ -215,50 +208,48 @@ export const FolderPickerDialog = ({
       setCreatingInFolderId(null);
       setNewFolderName('');
 
-      // If defaultFolderId is provided, use it and expand parent folders
       if (defaultFolderId)
       {
         setSelectedFolderId(defaultFolderId);
-
-        // Expand parent folders so the default folder is visible
-        const expandParents = async () =>
-        {
-          const newExpanded: Record<string, boolean> = {
-            [BOOKMARKS_BAR_ID]: true,
-            [OTHER_BOOKMARKS_ID]: true,
-            [MOBILE_BOOKMARKS_ID]: false
-          };
-
-          // Walk up the tree to find all parent folders
-          let currentId: string | undefined = defaultFolderId;
-          while (currentId)
-          {
-            const node = await getBookmark(currentId);
-            if (!node || !node.parentId || node.parentId === '0') break;
-            newExpanded[node.parentId] = true;
-            currentId = node.parentId;
-          }
-
-          // Also expand the default folder itself so its sub-folders are immediately visible
-          newExpanded[defaultFolderId] = true;
-
-          setExpandedState(newExpanded);
-          // Schedule scroll after tree re-renders with expanded parents
-          setPendingScrollFolderId(defaultFolderId);
-        };
-
-        expandParents();
       }
-      else
+
+      const initTree = async () =>
       {
-        // Default behavior: expand standard folders, select Other Bookmarks
-        setExpandedState({
-          [BOOKMARKS_BAR_ID]: true,
-          [OTHER_BOOKMARKS_ID]: true,
-          [MOBILE_BOOKMARKS_ID]: false
-        });
-        setSelectedFolderId(OTHER_BOOKMARKS_ID);
-      }
+        // Expand Bookmarks Bar and Other Bookmarks by default
+        const roots = await getRootFolders();
+        const bookmarksBar = findRootFolder(roots, 'bookmarks-bar');
+        const otherBookmarks = findRootFolder(roots, 'other');
+        const newExpanded: Record<string, boolean> = {};
+        if (bookmarksBar) newExpanded[bookmarksBar.id] = true;
+        if (otherBookmarks) newExpanded[otherBookmarks.id] = true;
+
+        // No default folder given: select Other Bookmarks
+        if (!defaultFolderId)
+        {
+          setExpandedState(newExpanded);
+          setSelectedFolderId(otherBookmarks?.id ?? bookmarksBar?.id ?? '');
+          return;
+        }
+
+        // Walk up the tree so every parent of the default folder is expanded
+        let currentId: string | undefined = defaultFolderId;
+        while (currentId)
+        {
+          const node = await getBookmark(currentId);
+          if (!node || !node.parentId || node.parentId === ROOT_NODE_ID) break;
+          newExpanded[node.parentId] = true;
+          currentId = node.parentId;
+        }
+
+        // Also expand the default folder itself so its sub-folders are immediately visible
+        newExpanded[defaultFolderId] = true;
+
+        setExpandedState(newExpanded);
+        // Schedule scroll after tree re-renders with expanded parents
+        setPendingScrollFolderId(defaultFolderId);
+      };
+
+      initTree();
     }
   }, [isOpen, defaultFolderId, getBookmark]);
 
@@ -298,6 +289,7 @@ export const FolderPickerDialog = ({
   const handleNewFolderClick = useCallback(() =>
   {
     // Create new folder inside the selected folder
+    if (!selectedFolderId) return;
     setCreatingInFolderId(selectedFolderId);
     setNewFolderName('');
     // Auto-expand the selected folder
@@ -328,6 +320,8 @@ export const FolderPickerDialog = ({
 
   const handleConfirm = useCallback(() =>
   {
+    // Nothing is selected until the dialog has looked up the default folder
+    if (!selectedFolderId) return;
     onSelect(selectedFolderId);
   }, [onSelect, selectedFolderId]);
 

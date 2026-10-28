@@ -1,6 +1,7 @@
 import { PinnedSite } from '../hooks/usePinnedSites';
 import { Space } from '../contexts/SpacesContext';
 import { importBookmarkNode, ImportResult } from './backupRestore';
+import { requireRootFolder } from './bookmarkRoots';
 import { toChromeColor } from './groupColors';
 
 // =============================================================================
@@ -627,14 +628,17 @@ async function findBookmarkFolderByPath(path: string): Promise<string | null>
   return current.id;
 }
 
-// Create a bookmark folder under Other Bookmarks, return its ID and path
+// Create a bookmark folder under Other Bookmarks, return its ID and path.
+// The path uses the folder's real (localized) title so SpaceManager can
+// resolve it back to segments.
 async function createBookmarkFolder(name: string): Promise<{ id: string; path: string }>
 {
+  const otherBookmarks = await requireRootFolder('other');
   const folder = await chrome.bookmarks.create({
-    parentId: '2', // Other Bookmarks
+    parentId: otherBookmarks.id,
     title: name,
   });
-  return { id: folder.id, path: `Other Bookmarks/${name}` };
+  return { id: folder.id, path: `${otherBookmarks.title}/${name}` };
 }
 
 export interface ArcImportCallbacks

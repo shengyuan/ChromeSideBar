@@ -1,5 +1,6 @@
 import { DeleteBookmarkAction } from '../actions/deleteBookmarkAction';
 import { TestResult } from './testUtils';
+import { requireRootFolder } from '../utils/bookmarkRoots';
 
 // --- Types ---
 
@@ -176,7 +177,8 @@ async function printLiveTree(nodeId: string, label: string): Promise<void>
 
 async function cleanupTestFolders(): Promise<void>
 {
-  const children = await chrome.bookmarks.getChildren('2');
+  const otherBookmarks = await requireRootFolder('other');
+  const children = await chrome.bookmarks.getChildren(otherBookmarks.id);
   for (const child of children)
   {
     if (child.title === 'test root')
@@ -754,7 +756,7 @@ export async function runDeleteBookmarkTests(
     console.log(`\n--- ${testCase.name} ---`);
 
     const testRoot = await chrome.bookmarks.create({
-      parentId: '2',
+      parentId: (await requireRootFolder('other')).id,
       title: 'test root',
     });
 

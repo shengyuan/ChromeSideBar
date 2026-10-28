@@ -3,6 +3,7 @@
 
 import { CloseTabAction } from '../actions/closeTabAction';
 import { TestResult } from './testUtils';
+import { requireRootFolder } from '../utils/bookmarkRoots';
 
 // --- Types ---
 
@@ -109,7 +110,7 @@ async function setupTestTabs(
     if (testTab.bookmark)
     {
       const bm = await chrome.bookmarks.create({
-        parentId: '2',
+        parentId: (await requireRootFolder('other')).id,
         title: testTab.bookmark,
         url: testTab.url,
       });

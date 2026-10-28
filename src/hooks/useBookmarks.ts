@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createChromeErrorHandler } from '../utils/chromeError';
+import { findRootFolder, RootFolderType } from '../utils/bookmarkRoots';
 
 export type SortOption = 'none' | 'name' | 'dateAdded';
 
@@ -402,12 +403,11 @@ export const useBookmarks = () => {
     await createBookmark(original.parentId, title, url, original.index + 1);
   }, [getBookmark, createBookmark]);
 
-  // Get the actual title of a root folder by its stable ID
-  // Root folder IDs are stable across platforms: '1'=Bookmarks Bar, '2'=Other Bookmarks, '3'=Mobile Bookmarks
-  const getRootFolderTitle = useCallback((id: '1' | '2' | '3'): string =>
+  // Get a top-level folder (e.g. 'other' = Other Bookmarks) by type. Its id
+  // is not fixed and its title is localized - see utils/bookmarkRoots.ts
+  const getRootFolder = useCallback((type: RootFolderType): chrome.bookmarks.BookmarkTreeNode | undefined =>
   {
-    const folder = bookmarks.find(b => b.id === id);
-    return folder?.title || '';
+    return findRootFolder(bookmarks, type);
   }, [bookmarks]);
 
   // Find a folder by its segment array (e.g. ["Bookmarks Bar", "A/B"])
@@ -476,7 +476,7 @@ export const useBookmarks = () => {
     moveBookmark,
     findFolderInParent,
     findFolderBySegments,
-    getRootFolderTitle,
+    getRootFolder,
     createBookmark,
     createBookmarksBatch,
     getBookmark,

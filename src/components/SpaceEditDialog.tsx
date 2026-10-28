@@ -41,7 +41,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
 }) =>
 {
   const isCreateMode = space === null;
-  const { createFolder, getBookmarkSegments, findFolderBySegments, getRootFolderTitle } = useBookmarks();
+  const { createFolder, getBookmarkSegments, findFolderBySegments, getRootFolder } = useBookmarks();
 
   // Form state
   const [name, setName] = useState('');
@@ -176,10 +176,15 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
     if (isCreateMode && !useExistingFolder)
     {
       const folderName = name.trim();
-      const rootTitle = getRootFolderTitle('2'); // "Other Bookmarks" (actual title from Chrome)
+      const otherBookmarks = getRootFolder('other');
+      if (!otherBookmarks)
+      {
+        setNameError('Cannot find the Other Bookmarks folder');
+        return;
+      }
 
       // Check if folder already exists under Other Bookmarks
-      const targetSegments = [rootTitle, folderName];
+      const targetSegments = [otherBookmarks.title, folderName];
       const existingFolder = findFolderBySegments(targetSegments);
       if (existingFolder)
       {
@@ -191,7 +196,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
         // Create folder under Other Bookmarks, then get its segments
         await new Promise<void>((resolve, reject) =>
         {
-          createFolder('2', folderName, async (newFolder) =>
+          createFolder(otherBookmarks.id, folderName, async (newFolder) =>
           {
             if (newFolder)
             {
@@ -239,6 +244,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
     createFolder,
     findFolderBySegments,
     getBookmarkSegments,
+    getRootFolder,
     onSave,
     onClose
   ]);
@@ -250,7 +256,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
     {
       return bookmarkFolderPath;
     }
-    const otherBookmarksTitle = getRootFolderTitle('2') || 'Other Bookmarks';
+    const otherBookmarksTitle = getRootFolder('other')?.title || 'Other Bookmarks';
     if (name.trim())
     {
       return `${otherBookmarksTitle}/${name.trim()}`;

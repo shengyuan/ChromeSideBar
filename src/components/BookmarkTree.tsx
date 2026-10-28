@@ -62,11 +62,7 @@ import { DeleteBookmarkAction } from '../actions/deleteBookmarkAction';
 import { CloseTabAction } from '../actions/closeTabAction';
 import { HoverHint } from './HoverHint';
 import { BOOKMARK_GO_BACK_HINT, buildDriftTooltip } from '../utils/driftTooltip';
-
-// Standard Chrome bookmark folder IDs
-const BOOKMARKS_BAR_ID = '1';
-const OTHER_BOOKMARKS_ID = '2';
-const MOBILE_BOOKMARKS_ID = '3';
+import { getRootFolderType, isRootFolder } from '../utils/bookmarkRoots';
 
 // Storage key for persisting folder expand/collapse state across restarts (keyed by space only)
 const getExpandedStateKey = (spaceId: string) =>
@@ -81,9 +77,6 @@ const BOOKMARK_DRIFT_HINT = 'Click to go back to the bookmarked URL';
 // Align the drift hint with the row's title so the cursor doesn't cover it
 const getBookmarkRowTitle = (anchor: HTMLElement) =>
   anchor.closest('[data-bookmark-id]')?.querySelector('[data-tree-row-title]');
-
-// Special folder IDs that cannot be edited/deleted
-const SPECIAL_FOLDER_IDS = [BOOKMARKS_BAR_ID, OTHER_BOOKMARKS_ID, MOBILE_BOOKMARKS_ID];
 
 // Helper: Check if targetId is a descendant of nodeId
 const isDescendant = (
@@ -247,7 +240,7 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
 }, ref) => {
   const isFolder = !node.url;
   const dndId = `bookmark-${node.id}`;
-  const isSpecialFolder = SPECIAL_FOLDER_IDS.includes(node.id);
+  const isSpecialFolder = isRootFolder(node);
 
   const isBeingDragged = isMultiDrag ? isSelected : activeId === node.id;
   const isDropTarget = dropTargetId === node.id;
@@ -700,7 +693,7 @@ BookmarkRow.displayName = 'BookmarkRow';
 
 // --- Draggable Wrapper ---
 const DraggableBookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>((props, ref) => {
-  const isSpecialFolder = SPECIAL_FOLDER_IDS.includes(props.node.id);
+  const isSpecialFolder = isRootFolder(props.node);
   const isFolder = !props.node.url;
   const bookmarkId = `bookmark-${props.node.id}`;
 
@@ -1026,9 +1019,9 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
     }, []);
   }, []);
 
-  // Filter out "Other Bookmarks" (id "2") if hidden
+  // Filter out "Other Bookmarks" if hidden (every copy, if local and account both exist)
   let visibleBookmarks = hideOtherBookmarks
-    ? bookmarks.filter(node => node.id !== '2')
+    ? bookmarks.filter(node => getRootFolderType(node, bookmarks) !== 'other')
     : bookmarks;
 
   // Space folder info - track if folder is found or missing
@@ -1134,7 +1127,7 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
     const flattenNode = (node: chrome.bookmarks.BookmarkTreeNode, isExpanded: boolean) =>
     {
       const isFolder = !node.url;
-      const isSpecialFolder = SPECIAL_FOLDER_IDS.includes(node.id);
+      const isSpecialFolder = isRootFolder(node);
 
       // Add non-special items to the list
       if (!isSpecialFolder)
@@ -1870,7 +1863,7 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
           }
 
           // Can't move special folders
-          if (SPECIAL_FOLDER_IDS.includes(sourceId))
+          if (bookmarks.some(root => root.id === sourceId))
           {
             return;
           }

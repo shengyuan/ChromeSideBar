@@ -7,6 +7,7 @@
 import { Space } from '../../contexts/SpacesContext';
 import { PINNED_SITES_STORAGE_KEY } from '../../hooks/usePinnedSites';
 import { DEFAULT_FOLLOW_ACTIVE_TAB_MODE, FOLLOW_ACTIVE_TAB_KEY } from '../../utils/followActiveTab';
+import { requireRootFolder } from '../../utils/bookmarkRoots';
 import { TestContext } from './types';
 import { sleep } from './stepHelpers';
 
@@ -26,7 +27,12 @@ export const TEST_URL_PREFIX = 'https://example.com/inpanel-test-';
 export const TEST_OTHER_DOMAIN_URL_PREFIX = 'https://example.org/inpanel-test-';
 export const TEST_ROOT_FOLDER_TITLE = 'InPanel Test Data (safe to delete)';
 export const TEST_PINNED_PREFIX = 'InPanelTest: ';
-const OTHER_BOOKMARKS_ID = '2';
+
+// Other Bookmarks' id is not fixed (see utils/bookmarkRoots.ts)
+async function getOtherBookmarksId(): Promise<string>
+{
+  return (await requireRootFolder('other')).id;
+}
 
 /**
  * A page that can actually produce sound, for C.2e/C.2f. Every other fixture
@@ -89,9 +95,10 @@ async function findChild(parentId: string, title: string): Promise<chrome.bookma
 /** The shared root folder all test-created bookmark folders live under, creating it if needed. */
 async function ensureTestRootFolder(): Promise<chrome.bookmarks.BookmarkTreeNode>
 {
-  const existing = await findChild(OTHER_BOOKMARKS_ID, TEST_ROOT_FOLDER_TITLE);
+  const otherBookmarksId = await getOtherBookmarksId();
+  const existing = await findChild(otherBookmarksId, TEST_ROOT_FOLDER_TITLE);
   if (existing) return existing;
-  return chrome.bookmarks.create({ parentId: OTHER_BOOKMARKS_ID, title: TEST_ROOT_FOLDER_TITLE });
+  return chrome.bookmarks.create({ parentId: otherBookmarksId, title: TEST_ROOT_FOLDER_TITLE });
 }
 
 export interface SpaceFixtureSpec
@@ -333,7 +340,7 @@ export async function resetTestData(getCtx: () => TestContext): Promise<void>
     await chrome.tabs.remove(testTabIds);
   }
 
-  const rootFolder = await findChild(OTHER_BOOKMARKS_ID, TEST_ROOT_FOLDER_TITLE);
+  const rootFolder = await findChild(await getOtherBookmarksId(), TEST_ROOT_FOLDER_TITLE);
   if (rootFolder)
   {
     await chrome.bookmarks.removeTree(rootFolder.id);
