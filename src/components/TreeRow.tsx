@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { DraggableAttributes } from '@dnd-kit/core';
 import { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 import { LAYOUT, getIndentStyle } from '../utils/indent';
+import { useT } from '../i18n';
 
 // Shared ring style for hover and highlighted states
 const RING_HIGHLIGHT = 'ring-2 ring-inset ring-gray-300 dark:ring-gray-600';
@@ -65,6 +66,7 @@ export const TreeRow = forwardRef<HTMLDivElement, TreeRowProps>(({
   style,
   ...props // Capture remaining props (including those from ContextMenu.Trigger)
 }, ref) => {
+  const t = useT();
   return (
     <div
       ref={ref}
@@ -112,7 +114,7 @@ export const TreeRow = forwardRef<HTMLDivElement, TreeRowProps>(({
         {hasChildren && (
           <button
             type="button"
-            aria-label={isExpanded ? "Collapse" : "Expand"}
+            aria-label={isExpanded ? t.bookmarks.collapse : t.bookmarks.expand}
             aria-expanded={isExpanded}
             className="w-full h-full flex items-center justify-center border-0 bg-transparent cursor-pointer hover:text-gray-900 dark:hover:text-white"
             onClick={(e) => {

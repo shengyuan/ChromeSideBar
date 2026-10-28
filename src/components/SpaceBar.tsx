@@ -11,6 +11,7 @@ import { moveTabToSpace, createTabInSpace } from '../utils/tabOperations';
 import { CloseTabAction } from '../actions/closeTabAction';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import type { UndoableAction } from '../actions/types';
+import { useT } from '../i18n';
 
 interface SpaceBarProps
 {
@@ -29,6 +30,7 @@ export const SpaceBar: React.FC<SpaceBarProps> = ({
   onPerformAction,
 }) =>
 {
+  const t = useT();
   const { allSpaces, spaces, activeSpaceId, switchToSpace, moveSpace, getTabIdsInSpace, windowId } = useSpacesContext();
   const { getItemKeyForTab, restoreItemAssociation } = useBookmarkTabsContext();
   const { activeDragData, overId, dropPosition, registerDropHandler, unregisterDropHandler } = useUnifiedDnd();
@@ -212,10 +214,12 @@ export const SpaceBar: React.FC<SpaceBarProps> = ({
             className="text-[8px] font-medium text-gray-400 dark:text-gray-500 tracking-wide"
             style={{
               writingMode: 'vertical-lr',
+              // Lay CJK glyphs sideways like Latin text, so rotate(180deg) doesn't turn them upside down
+              textOrientation: 'sideways',
               transform: 'rotate(180deg)',
             }}
           >
-            SPACE
+            {t.spaces.spaceBarLabel}
           </span>
         </div>
 
@@ -258,7 +262,7 @@ export const SpaceBar: React.FC<SpaceBarProps> = ({
         <div className="flex items-center px-1">
           <button
             onClick={onCreateSpace}
-            title="Create new space"
+            title={t.spaces.createNewSpace}
             className={clsx(
               "p-1.5 rounded",
               "text-gray-500 dark:text-gray-400",
@@ -277,7 +281,7 @@ export const SpaceBar: React.FC<SpaceBarProps> = ({
         isOpen={confirmCloseAllDialog.isOpen}
         itemCount={confirmCloseAllDialog.tabIds.length}
         itemType="tabs"
-        details="This will close the window."
+        details={t.spaces.closeWindowWarning}
         onConfirm={handleConfirmCloseAll}
         onClose={() => setConfirmCloseAllDialog({ isOpen: false, tabIds: [] })}
       />

@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Globe, Volume2 } from 'lucide-react';
 import * as DropdownMenu from './menu/DropdownMenu';
 import { useFontSize } from '../contexts/FontSizeContext';
+import { useT } from '../i18n';
 
 export interface AudioTabsDropdownProps
 {
@@ -14,6 +15,7 @@ export const AudioTabsDropdown = ({
   historyTabs
 }: AudioTabsDropdownProps) =>
 {
+  const t = useT();
   const fontSize = useFontSize();
 
   const handleSelectTab = useCallback(async (tab: chrome.tabs.Tab) =>
@@ -69,14 +71,14 @@ export const AudioTabsDropdown = ({
             className="px-3 py-1.5 font-medium text-gray-500 dark:text-gray-400"
             style={{ fontSize: fontSize - 1 }}
           >
-            Recently played
+            {t.app.audio.recentlyPlayed}
           </div>
           {historyTabs!.map((tab) => renderTabItem(tab, false))}
         </>
       )}
       {!hasPlayingTabs && !hasHistoryTabs && (
         <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
-          No audio playing
+          {t.app.audio.noAudioPlaying}
         </div>
       )}
     </DropdownMenu.Content>

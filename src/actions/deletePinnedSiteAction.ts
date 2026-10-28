@@ -2,6 +2,7 @@ import { UndoableAction } from './types';
 import { truncateTitle } from '../utils/truncateTitle';
 import { PinnedSite } from '../managers/shared/pinnedSitesApi';
 import { pinnedSitesManagerProxy } from '../managers/proxies/pinnedSitesManagerProxy';
+import { getMessages } from '../i18n';
 
 interface PinnedSnapshot
 {
@@ -68,12 +69,12 @@ export class DeletePinnedSiteAction implements UndoableAction
     if (this.snapshots.length === 1)
     {
       const name = this.snapshots[0].pin.title || this.snapshots[0].pin.url;
-      this.description = `Unpinned "${truncateTitle(name)}"`;
+      this.description = getMessages().actions.unpinnedSite(truncateTitle(name));
 
     }
     else
     {
-      this.description = `Unpinned ${this.snapshots.length} sites`;
+      this.description = getMessages().actions.unpinnedSites(this.snapshots.length);
     }
 
     if (import.meta.env.DEV)

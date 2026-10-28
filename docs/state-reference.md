@@ -144,6 +144,15 @@ Array<{
 - Consumers: `src/background.ts` (space switching), `src/hooks/useFollowActiveTab.ts` (scrolling), `src/components/SettingsDialog.tsx`
 - Instances: 1 per extension (shared across windows)
 
+### `sidebar-language`
+UI language setting (raw string, not JSON)
+```typescript
+'auto' | 'en' | 'zh-TW'  // default 'auto' = follow Chrome's UI language
+```
+- Owner: `src/i18n/i18nStore.ts` (written by `i18n.setLanguageSetting()`)
+- Consumers: every sidebar and the Space Navigator popup, via `storage.onChanged`; `src/components/SettingsDialog.tsx`
+- Instances: 1 per extension (shared across windows)
+
 ### `pinnedSites`
 Pinned sites list
 ```typescript

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useFontSize } from '../contexts/FontSizeContext';
+import { useT } from '../i18n';
 
 type SlideState = 'entering' | 'visible' | 'exiting' | 'hidden';
 
@@ -22,6 +23,7 @@ export const Toast = ({
   duration
 }: ToastProps) =>
 {
+  const t = useT();
   const fontSize = useFontSize();
   const [slideState, setSlideState] = useState<SlideState>('hidden');
   const effectiveDuration = duration ?? 2500;
@@ -94,13 +96,13 @@ export const Toast = ({
             onClick={() => { onUndo(); startExit(); }}
             className="shrink-0 px-2 py-0.5 text-blue-300 hover:text-blue-200 font-medium rounded"
           >
-            Undo
+            {t.common.undo}
           </button>
         )}
         <button
           onClick={startExit}
           className="shrink-0 p-0.5 hover:bg-gray-700 rounded"
-          aria-label="Dismiss"
+          aria-label={t.app.toast.dismiss}
         >
           <X size={16} />
         </button>

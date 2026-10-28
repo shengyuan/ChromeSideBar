@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createChromeErrorHandler } from '../utils/chromeError';
 import { findRootFolder, RootFolderType } from '../utils/bookmarkRoots';
+import { getMessages } from '../i18n';
 
 export type SortOption = 'none' | 'name' | 'dateAdded';
 
@@ -52,7 +53,7 @@ export const useBookmarks = () => {
       });
     }
     else {
-      setError('Unable to access browser bookmarks');
+      setError(getMessages().notices.bookmarksUnavailable);
     }
   }, [handleError]);
 
@@ -268,7 +269,7 @@ export const useBookmarks = () => {
         {
           // Log the error but also return it for caller to handle
           handleError('create bookmark');
-          resolve({ node: null, error: lastError.message || 'Unknown error' });
+          resolve({ node: null, error: lastError.message || getMessages().notices.unknownError });
           return;
         }
         resolve({ node: node || null, error: null });

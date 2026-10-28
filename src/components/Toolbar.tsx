@@ -5,6 +5,7 @@ import { useShowActiveTab } from '../hooks/useFollowActiveTab';
 import { useSpacesContext } from '../contexts/SpacesContext';
 import { tabHistoryManagerProxy } from '../managers/proxies/tabHistoryManagerProxy';
 import { TabHistoryItem } from '../managers/shared/tabHistoryManagerApi';
+import { useT } from '../i18n';
 
 interface ToolbarProps
 {
@@ -78,6 +79,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
   hasUnreadNews = false,
 }, _ref) =>
 {
+  const t = useT();
   const activeButtonClass = 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 active:bg-blue-200 dark:active:bg-blue-800';
   const inactiveButtonClass = 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-500';
 
@@ -461,7 +463,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
     if (trimmed && !savedFilters.includes(trimmed))
     {
       onSaveFilter(trimmed);
-      onShowToast?.(`"${trimmed}" filter saved`);
+      onShowToast?.(t.app.toolbar.filterSaved(trimmed));
     }
   };
 
@@ -507,7 +509,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
               onMouseDown={() => handleHistoryMouseDown('prev')}
               onMouseUp={() => handleHistoryMouseUp('prev')}
               onMouseLeave={handleHistoryMouseLeave}
-              title={`Previous used tab${prevTabShortcut ? ` (${prevTabShortcut})` : ''}\nHold for history`}
+              title={t.app.toolbar.prevUsedTab(prevTabShortcut)}
               className={`p-1.5 rounded transition-all duration-150 focus:outline-none ${
                 historyDropdown === 'prev' ? activeButtonClass : inactiveButtonClass
               }`}
@@ -527,12 +529,12 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                     ) : (
                       <div className="w-4 h-4 flex-shrink-0 bg-gray-300 dark:bg-gray-600 rounded mr-2" />
                     )}
-                    <span className="truncate">{item.title}</span>
+                    <span className="truncate">{item.title || t.app.toolbar.noTitle}</span>
                   </DropdownMenu.Item>
                 ))
               ) : (
                 <div className="px-3 py-2 text-gray-500 dark:text-gray-400">
-                  No previous tabs
+                  {t.app.toolbar.noPreviousTabs}
                 </div>
               )}
             </DropdownMenu.Content>
@@ -549,7 +551,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
               onMouseDown={() => handleHistoryMouseDown('next')}
               onMouseUp={() => handleHistoryMouseUp('next')}
               onMouseLeave={handleHistoryMouseLeave}
-              title={`Next used tab${nextTabShortcut ? ` (${nextTabShortcut})` : ''}\nHold for history`}
+              title={t.app.toolbar.nextUsedTab(nextTabShortcut)}
               className={`p-1.5 rounded transition-all duration-150 focus:outline-none ${
                 historyDropdown === 'next' ? activeButtonClass : inactiveButtonClass
               }`}
@@ -569,12 +571,12 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                     ) : (
                       <div className="w-4 h-4 flex-shrink-0 bg-gray-300 dark:bg-gray-600 rounded mr-2" />
                     )}
-                    <span className="truncate">{item.title}</span>
+                    <span className="truncate">{item.title || t.app.toolbar.noTitle}</span>
                   </DropdownMenu.Item>
                 ))
               ) : (
                 <div className="px-3 py-2 text-gray-500 dark:text-gray-400">
-                  No next tabs
+                  {t.app.toolbar.noNextTabs}
                 </div>
               )}
             </DropdownMenu.Content>
@@ -590,7 +592,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
             onMouseDown={onAudioTabJump ? handleAudioMouseDown : undefined}
             onMouseUp={onAudioTabJump ? handleAudioMouseUp : undefined}
             onMouseLeave={onAudioTabJump ? handleAudioMouseLeave : undefined}
-            title={onAudioTabJump ? 'Click to jump to audio tab · Hold to show list' : 'Show tabs playing audio/video'}
+            title={onAudioTabJump ? t.app.toolbar.audioJumpOrHold : t.app.toolbar.showAudioTabs}
             className={`p-1.5 rounded transition-all duration-150 focus:outline-none ${inactiveButtonClass}`}
           >
             <Volume2 size={16} />
@@ -599,7 +601,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
           {/* Scroll to active tab button */}
           <button
             onClick={showActiveTab}
-            title="Show active tab"
+            title={t.app.toolbar.showActiveTab}
             className={`p-1.5 rounded transition-all duration-150 focus:outline-none ${inactiveButtonClass}`}
           >
             <TreeGutterIcon size={16} />
@@ -612,7 +614,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
           {onToggleFilterArea && (
             <button
               onClick={onToggleFilterArea}
-              title={showFilterArea ? "Hide search bar" : "Show search bar"}
+              title={showFilterArea ? t.app.toolbar.hideSearchBar : t.app.toolbar.showSearchBar}
               className={`p-1.5 rounded transition-all duration-150 focus:outline-none ${
                 showFilterArea ? activeButtonClass : inactiveButtonClass
               }`}
@@ -628,7 +630,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
           <button
             ref={menuButtonRef}
             onClick={onMenuToggle}
-            title="Menu"
+            title={t.app.toolbar.menu}
             className={`p-1.5 rounded transition-all duration-150 ${inactiveButtonClass}`}
           >
             <Settings size={16} />
@@ -652,7 +654,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyDown={handleInputKeydown}
               onBlur={handleInputBlur}
-              placeholder="Filter by title or URL..."
+              placeholder={t.app.toolbar.filterPlaceholder}
               className="w-full pl-2 pr-16 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
 
@@ -660,7 +662,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
             {inputValue && (
               <button
                 onClick={handleClearFilter}
-                title="Clear filter"
+                title={t.app.toolbar.clearFilter}
                 className="absolute right-8 p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <X size={14} />
@@ -671,7 +673,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
             <button
               ref={dropdownButtonRef}
               onClick={() => setShowDropdown(!showDropdown)}
-              title="Saved Filters"
+              title={t.app.toolbar.savedFilters}
               className="absolute right-1 p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <ChevronDown size={16} />
@@ -688,7 +690,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                   <>
                     <div className="px-3 py-1 font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
                       <Bookmark size={12} />
-                      Saved Filters
+                      {t.app.toolbar.savedFilters}
                     </div>
                     {savedFilters.map((filter) => (
                       <div
@@ -708,7 +710,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                             onDeleteSavedFilter(filter);
                           }}
                           className="p-0.5 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Delete saved filter"
+                          title={t.app.toolbar.deleteSavedFilter}
                         >
                           <Trash2 size={12} />
                         </button>
@@ -725,7 +727,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                     )}
                     <div className="px-3 py-1 font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
                       <Clock size={12} />
-                      Recent
+                      {t.app.toolbar.recentFilters}
                     </div>
                     {recentFilters.map((filter) => (
                       <div
@@ -744,7 +746,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                 {/* Empty state */}
                 {savedFilters.length === 0 && recentFilters.length === 0 && (
                   <div className="px-3 py-2 text-gray-500 dark:text-gray-400 text-center">
-                    No saved or recent filters
+                    {t.app.toolbar.noSavedOrRecentFilters}
                   </div>
                 )}
               </div>
@@ -755,7 +757,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
           <button
             onClick={handleSaveFilter}
             disabled={!canSave}
-            title={canSave ? "Save filter" : inputValue.trim() ? "Already saved" : "Enter filter text first"}
+            title={canSave ? t.app.toolbar.saveFilter : inputValue.trim() ? t.app.toolbar.filterAlreadySaved : t.app.toolbar.enterFilterTextFirst}
             className={`p-1.5 rounded transition-all duration-150 ${
               canSave
                 ? 'text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30'
@@ -770,7 +772,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
             <button
               ref={syntaxHelpButtonRef}
               onClick={() => setShowSyntaxHelp(!showSyntaxHelp)}
-              title="Search syntax help"
+              title={t.app.toolbar.syntaxHelp}
               className="p-1.5 rounded transition-all duration-150 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <HelpCircle size={16} />
@@ -782,17 +784,17 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                 ref={syntaxHelpRef}
                 className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 px-3 z-50 w-56 text-sm"
               >
-                <div className="font-medium text-gray-700 dark:text-gray-200 mb-2">Search Syntax</div>
+                <div className="font-medium text-gray-700 dark:text-gray-200 mb-2">{t.app.toolbar.syntaxTitle}</div>
                 <div className="space-y-1 text-gray-600 dark:text-gray-400 text-xs">
-                  <div className="flex justify-between"><span>space</span><span className="text-gray-500">implicit AND</span></div>
-                  <div className="flex justify-between"><span>&&</span><span className="text-gray-500">AND</span></div>
-                  <div className="flex justify-between"><span>||</span><span className="text-gray-500">OR</span></div>
-                  <div className="flex justify-between"><span>!</span><span className="text-gray-500">NOT</span></div>
-                  <div className="flex justify-between"><span>( )</span><span className="text-gray-500">grouping</span></div>
-                  <div className="flex justify-between"><span>"..." '...'</span><span className="text-gray-500">exact phrase</span></div>
+                  <div className="flex justify-between"><span>{t.app.toolbar.syntaxSpace}</span><span className="text-gray-500">{t.app.toolbar.syntaxImplicitAnd}</span></div>
+                  <div className="flex justify-between"><span>&&</span><span className="text-gray-500">{t.app.toolbar.syntaxAnd}</span></div>
+                  <div className="flex justify-between"><span>||</span><span className="text-gray-500">{t.app.toolbar.syntaxOr}</span></div>
+                  <div className="flex justify-between"><span>!</span><span className="text-gray-500">{t.app.toolbar.syntaxNot}</span></div>
+                  <div className="flex justify-between"><span>( )</span><span className="text-gray-500">{t.app.toolbar.syntaxGrouping}</span></div>
+                  <div className="flex justify-between"><span>"..." '...'</span><span className="text-gray-500">{t.app.toolbar.syntaxExactPhrase}</span></div>
                 </div>
                 <div className="border-t border-gray-200 dark:border-gray-700 mt-2 pt-2">
-                  <div className="text-gray-500 dark:text-gray-500 text-xs mb-1">Examples:</div>
+                  <div className="text-gray-500 dark:text-gray-500 text-xs mb-1">{t.app.toolbar.syntaxExamples}</div>
                   <div className="space-y-0.5 text-gray-600 dark:text-gray-400 text-xs">
                     <div>youtube canada</div>
                     <div>youtube || instagram</div>
@@ -808,7 +810,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
         {/* Open tabs only checkbox */}
         <label
           className="flex items-center gap-1.5 px-2 pb-1.5 cursor-pointer select-none"
-          title="When checked, only shows bookmarks and pinned sites that are currently open in a tab"
+          title={t.app.toolbar.withOpenTabsHint}
         >
           <input
             type="checkbox"
@@ -816,7 +818,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
             onChange={onFilterLiveTabsToggle}
             className="w-3.5 h-3.5 accent-blue-500"
           />
-          <span className="text-xs text-gray-500 dark:text-gray-400">With open tabs</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{t.app.toolbar.withOpenTabs}</span>
         </label>
         </>
       )}

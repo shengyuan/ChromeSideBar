@@ -8,6 +8,7 @@ import {
   getRootFolderType,
   RootFolderType,
 } from './bookmarkRoots';
+import { getMessages } from '../i18n';
 
 // Convert PascalCase to kebab-case — used only for v1 backup migration
 function toKebabCase(name: string): string
@@ -300,7 +301,7 @@ export async function importFullBackup(
     const liveRoots = await getRootFolders();
     const liveOther = findRootFolder(liveRoots, 'other');
     if (!liveOther) {
-      throw new Error('Cannot find the "Other Bookmarks" folder to import into');
+      throw new Error(getMessages().notices.importTargetFolderNotFound);
     }
 
     if (options.bookmarkMode === 'replace') {

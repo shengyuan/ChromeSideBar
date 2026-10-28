@@ -18,15 +18,15 @@ import { createTestBookmark, createTestPinnedSite, createTestSpace, TEST_SPACE_W
 import { closeTab, navigateTab, openBookmarkTab, openPinnedTab, setArcShowTabTitleWhenDrifted, setBookmarkOpenMode, setFollowActiveTabMode, switchSpaceVerified } from '../actions';
 import { assertBookmarkLoaded } from '../assertions';
 import { resolveStringRef, sleep } from '../stepHelpers';
-import { PIN_GO_BACK_HINT } from '../../../utils/driftTooltip';
+import { getMessages } from '../../../i18n';
 
 // The sidebar only re-renders after Chrome reports the navigation through
 // chrome.tabs.onUpdated, so DOM checks poll until this deadline
 const DOM_TIMEOUT_MS = 5000;
 const DOM_POLL_MS = 100;
 
-// Tooltip line PinnedIcon adds to a drifted pin
-const PIN_DRIFT_TOOLTIP = PIN_GO_BACK_HINT;
+// Tooltip line PinnedIcon adds to a drifted pin, in the current UI language
+const pinDriftTooltip = (): string => getMessages().notices.driftTooltip.pinGoBackHint;
 
 const OTHER_DOMAIN = 'example.org';
 
@@ -97,7 +97,9 @@ class BookmarkRowView
   /** Arc mode shows an always-visible Close tab button on a loaded bookmark's row. */
   showsLoaded(): boolean
   {
-    return this.element.querySelector('button[aria-label="Close tab"]') !== null;
+    const closeLabel = getMessages().bookmarks.rowActions.closeTab;
+    return Array.from(this.element.querySelectorAll('button[aria-label]'))
+      .some(button => button.getAttribute('aria-label') === closeLabel);
   }
 }
 
@@ -185,10 +187,10 @@ function assertPinButton(pinRef: string, tabRef: string | undefined, expected: P
           }
         }
 
-        const drifted = pin.tooltip().includes(PIN_DRIFT_TOOLTIP);
+        const drifted = pin.tooltip().includes(pinDriftTooltip());
         if (drifted !== expected.drifted)
         {
-          return `expected the tooltip to ${expected.drifted ? 'have' : 'not have'} a "${PIN_DRIFT_TOOLTIP}" line, it is "${pin.tooltip().replace(/\n/g, ' | ')}"`;
+          return `expected the tooltip to ${expected.drifted ? 'have' : 'not have'} a "${pinDriftTooltip()}" line, it is "${pin.tooltip().replace(/\n/g, ' | ')}"`;
         }
         return null;
       });

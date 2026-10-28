@@ -1,6 +1,7 @@
 import { DeleteBookmarkAction } from '../actions/deleteBookmarkAction';
 import { TestResult } from './testUtils';
 import { requireRootFolder } from '../utils/bookmarkRoots';
+import { getMessages } from '../i18n';
 
 // --- Types ---
 
@@ -19,12 +20,26 @@ interface TreeShape
   children?: TreeShape[];
 }
 
+// Expected undo description: one item's title ('' = untitled), or a count of items.
+// Turned into text in the current UI language when the test runs.
+type ExpectedDescription = { title: string } | { count: number };
+
+function describeExpected(expected: ExpectedDescription): string
+{
+  const messages = getMessages().actions;
+  if ('count' in expected)
+  {
+    return messages.deletedBookmarks(expected.count);
+  }
+  return messages.deletedBookmark(expected.title || messages.untitledBookmark);
+}
+
 interface TestCase
 {
   name: string;
   tree: TestNode[];
   selectionOrder?: string[];   // Pass IDs in this title order (default: tree traversal order)
-  expectedDescription: string;
+  expectedDescription: ExpectedDescription;
   expectedAfterDo: TreeShape[];
 }
 
@@ -199,7 +214,7 @@ const TEST_CASES: TestCase[] = [
     tree: [
       { title: 'bookmark a', url: 'https://test.com/a', selected: true },
     ],
-    expectedDescription: 'Deleted "bookmark a"',
+    expectedDescription: { title: 'bookmark a' },
     expectedAfterDo: [],
   },
 
@@ -211,7 +226,7 @@ const TEST_CASES: TestCase[] = [
       { title: 'bookmark b', url: 'https://test.com/b', selected: true },
       { title: 'bookmark c', url: 'https://test.com/c', selected: true },
     ],
-    expectedDescription: 'Deleted 3 bookmarks',
+    expectedDescription: { count: 3 },
     expectedAfterDo: [],
   },
 
@@ -227,7 +242,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -243,7 +258,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -259,7 +274,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -279,7 +294,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -312,7 +327,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -345,7 +360,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -368,7 +383,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted 2 bookmarks',
+    expectedDescription: { count: 2 },
     expectedAfterDo: [],
   },
 
@@ -399,7 +414,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted 2 bookmarks',
+    expectedDescription: { count: 2 },
     expectedAfterDo: [],
   },
 
@@ -426,7 +441,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted 2 bookmarks',
+    expectedDescription: { count: 2 },
     expectedAfterDo: [
       { title: 'folder 1', children: [] },
     ],
@@ -438,7 +453,7 @@ const TEST_CASES: TestCase[] = [
     tree: [
       { title: 'bookmark a', url: 'https://test.com/a' },
     ],
-    expectedDescription: 'Deleted 0 bookmarks',
+    expectedDescription: { count: 0 },
     expectedAfterDo: [
       { title: 'bookmark a', url: 'https://test.com/a' },
     ],
@@ -450,7 +465,7 @@ const TEST_CASES: TestCase[] = [
     tree: [
       { title: 'folder 1', selected: true, children: [] },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -462,7 +477,7 @@ const TEST_CASES: TestCase[] = [
       { title: 'bookmark a', url: 'https://test.com/a', selected: true },
       { title: 'bookmark y', url: 'https://test.com/y' },
     ],
-    expectedDescription: 'Deleted "bookmark a"',
+    expectedDescription: { title: 'bookmark a' },
     expectedAfterDo: [
       { title: 'bookmark x', url: 'https://test.com/x' },
       { title: 'bookmark y', url: 'https://test.com/y' },
@@ -479,7 +494,7 @@ const TEST_CASES: TestCase[] = [
       { title: 'bookmark d', url: 'https://test.com/d', selected: true },
       { title: 'bookmark e', url: 'https://test.com/e' },
     ],
-    expectedDescription: 'Deleted 2 bookmarks',
+    expectedDescription: { count: 2 },
     expectedAfterDo: [
       { title: 'bookmark a', url: 'https://test.com/a' },
       { title: 'bookmark c', url: 'https://test.com/c' },
@@ -505,7 +520,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -515,7 +530,7 @@ const TEST_CASES: TestCase[] = [
     tree: [
       { title: '', url: 'https://test.com/notitle', selected: true },
     ],
-    expectedDescription: 'Deleted "bookmark"',
+    expectedDescription: { title: '' },
     expectedAfterDo: [],
   },
 
@@ -542,7 +557,7 @@ const TEST_CASES: TestCase[] = [
         ]
       },
     ],
-    expectedDescription: 'Deleted "folder 1"',
+    expectedDescription: { title: 'folder 1' },
     expectedAfterDo: [],
   },
 
@@ -571,7 +586,7 @@ const TEST_CASES: TestCase[] = [
     ],
     // DEF before C — this is the order that triggers the bug
     selectionOrder: ['folder DEF', 'bookmark C', 'bookmark A', 'bookmark B'],
-    expectedDescription: 'Deleted 3 bookmarks',
+    expectedDescription: { count: 3 },
     expectedAfterDo: [
       { title: 'folder ABC', children: [] },
       { title: 'folder HIJ', children: [] },
@@ -720,9 +735,9 @@ function generateRandomTestCases(count: number): TestCase[]
     const selectionOrder = shuffleArray(selectedTitles);
     const dedupedTitles = computeDedupedTitles(tree);
     const expectedAfterDo = computeExpectedAfterDo(tree);
-    const expectedDescription = dedupedTitles.length === 1
-      ? `Deleted "${dedupedTitles[0] || 'bookmark'}"`
-      : `Deleted ${dedupedTitles.length} bookmarks`;
+    const expectedDescription: ExpectedDescription = dedupedTitles.length === 1
+      ? { title: dedupedTitles[0] }
+      : { count: dedupedTitles.length };
 
     cases.push({
       name: `Random ${i + 1}`,
@@ -791,9 +806,10 @@ export async function runDeleteBookmarkTests(
       console.log(`  Description: "${action.description}"`);
 
       // Verify description
-      if (action.description !== testCase.expectedDescription)
+      const expectedDescription = describeExpected(testCase.expectedDescription);
+      if (action.description !== expectedDescription)
       {
-        const error = `Description: expected "${testCase.expectedDescription}", got "${action.description}"`;
+        const error = `Description: expected "${expectedDescription}", got "${action.description}"`;
         console.error(`  FAIL ${error}`);
         results.push({ name: testCase.name, passed: false, error });
         continue;

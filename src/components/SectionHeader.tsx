@@ -2,6 +2,7 @@ import React, { ReactNode, useRef } from 'react';
 import { MoreHorizontal } from 'lucide-react';
 import * as ContextMenu from './menu/ContextMenu';
 import { getIndentPadding } from '../utils/indent';
+import { useT } from '../i18n';
 
 interface SectionHeaderProps
 {
@@ -19,13 +20,15 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   label,
   icon,
   menuContent,
-  menuTitle = 'Options',
+  menuTitle,
   fontSize,
   showMenuButton = true,
   textClassName,
   labelClassName,
 }) =>
 {
+  const t = useT();
+  const menuButtonTitle = menuTitle ?? t.app.sectionHeader.options;
   const menuJustClosedRef = useRef(false);
 
   // Handler for menu button mousedown - detect if menu is open before it closes
@@ -121,8 +124,8 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
               onMouseDown={(e) => handleMenuButtonMouseDown(e, isMenuOpen)}
               onClick={(e) => handleMenuButtonClick(e, openMenu)}
               className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-              title={menuTitle}
-              aria-label={menuTitle}
+              title={menuButtonTitle}
+              aria-label={menuButtonTitle}
             >
               <MoreHorizontal size={Math.max(fontSize ?? 14, 14)} />
             </button>

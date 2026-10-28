@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useFontSize } from '../contexts/FontSizeContext';
 import { X } from 'lucide-react';
+import { useT } from '../i18n';
 
 interface DialogProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const Dialog = ({
   zIndex = 50,
 }: DialogProps) =>
 {
+  const t = useT();
   const fontSize = useFontSize();
 
   // Escape key handler
@@ -54,7 +56,7 @@ export const Dialog = ({
           </h3>
           <button
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label={t.app.dialog.closeDialog}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500"
           >
             <X size={16} />

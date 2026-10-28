@@ -1,5 +1,7 @@
 // Iconify API utilities for dynamic icon loading
 
+import { getMessages } from '../i18n';
+
 const ICONIFY_API_BASE = 'https://api.iconify.design';
 const ICONIFY_COLLECTION_API = `${ICONIFY_API_BASE}/collection?prefix=lucide`;
 
@@ -23,7 +25,7 @@ export async function fetchIconNames(): Promise<IconFetchResult>
   // Check offline status first
   if (!navigator.onLine)
   {
-    return { icons: [], error: 'You appear to be offline' };
+    return { icons: [], error: getMessages().notices.iconsOffline };
   }
 
   try
@@ -52,7 +54,7 @@ export async function fetchIconNames(): Promise<IconFetchResult>
   catch (error)
   {
     console.warn('Failed to fetch icon names:', error);
-    return { icons: [], error: 'Failed to load icons' };
+    return { icons: [], error: getMessages().notices.iconsLoadFailed };
   }
 }
 

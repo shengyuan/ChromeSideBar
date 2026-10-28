@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Dialog } from './Dialog';
 import { NEWS_URL } from '../constants/urls';
+import { useT } from '../i18n';
 
 const ABOUT = {
   author: 'monehsieh',
@@ -17,6 +18,7 @@ interface AboutDialogProps {
 
 export function AboutDialog({ isOpen, onClose, onShowWelcome }: AboutDialogProps)
 {
+  const t = useT();
   const [version, setVersion] = useState('');
 
   useEffect(() =>
@@ -28,15 +30,15 @@ export function AboutDialog({ isOpen, onClose, onShowWelcome }: AboutDialogProps
   }, [isOpen]);
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="About" maxWidth="max-w-xs">
+    <Dialog isOpen={isOpen} onClose={onClose} title={t.app.about.title} maxWidth="max-w-xs">
       <div className="p-3 space-y-3">
         <div className="text-gray-700 dark:text-gray-300">
           <p className="font-medium">Sidebar for Arc Users</p>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Version {version}
+            {t.app.about.version(version)}
           </p>
           <p className="text-gray-500 dark:text-gray-400">
-            by {ABOUT.author}
+            {t.app.about.byAuthor(ABOUT.author)}
           </p>
         </div>
 
@@ -50,7 +52,7 @@ export function AboutDialog({ isOpen, onClose, onShowWelcome }: AboutDialogProps
               }}
               className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
             >
-              Show Welcome
+              {t.app.about.showWelcome}
             </button>
           )}
           <a
@@ -59,7 +61,7 @@ export function AboutDialog({ isOpen, onClose, onShowWelcome }: AboutDialogProps
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
           >
-            News <ExternalLink size={12} />
+            {t.app.about.news} <ExternalLink size={12} />
           </a>
           <a
             href={ABOUT.github}
@@ -75,7 +77,7 @@ export function AboutDialog({ isOpen, onClose, onShowWelcome }: AboutDialogProps
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
           >
-            Chrome Web Store <ExternalLink size={12} />
+            {t.app.about.chromeWebStore} <ExternalLink size={12} />
           </a>
         </div>
 
@@ -84,7 +86,7 @@ export function AboutDialog({ isOpen, onClose, onShowWelcome }: AboutDialogProps
             onClick={onClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
-            Close
+            {t.common.close}
           </button>
         </div>
       </div>

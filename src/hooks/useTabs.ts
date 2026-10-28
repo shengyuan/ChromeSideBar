@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createChromeErrorHandler } from '../utils/chromeError';
+import { getMessages } from '../i18n';
 import type { TabGroupDisplayOrder } from '../components/SettingsDialog';
 
 // Helper: safely extract hostname from URL
@@ -46,7 +47,7 @@ export const useTabs = (windowId?: number) => {
       });
     }
     else {
-      setError('Unable to access browser tabs');
+      setError(getMessages().notices.tabsUnavailable);
     }
   }, [handleError]);
 

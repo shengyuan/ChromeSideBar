@@ -1,5 +1,6 @@
 import { Dialog } from './Dialog';
 import { ChangelogGroup } from '../data/changelog';
+import { useT } from '../i18n';
 
 interface WhatsNewDialogProps
 {
@@ -11,11 +12,12 @@ interface WhatsNewDialogProps
 
 export function WhatsNewDialog({ isOpen, onClose, groups, version }: WhatsNewDialogProps)
 {
+  const t = useT();
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title={version ? `What's New in ${version}` : "What's New"}
+      title={version ? t.app.whatsNew.titleForVersion(version) : t.app.whatsNew.title}
       maxWidth="max-w-sm"
       footer={
         <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex justify-end">
@@ -23,7 +25,7 @@ export function WhatsNewDialog({ isOpen, onClose, groups, version }: WhatsNewDia
             onClick={onClose}
             className="px-4 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Got it
+            {t.app.whatsNew.gotIt}
           </button>
         </div>
       }
@@ -48,7 +50,7 @@ export function WhatsNewDialog({ isOpen, onClose, groups, version }: WhatsNewDia
         </div>
       ) : (
         <p className="p-4 text-sm text-gray-500 dark:text-gray-400">
-          You're up to date - no new features since your last update.
+          {t.app.whatsNew.upToDate}
         </p>
       )}
     </Dialog>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 
 interface ConfirmDeleteDialogProps
 {
@@ -20,23 +21,28 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   onClose,
 }) =>
 {
+  const t = useT();
   const handleConfirm = () =>
   {
     onConfirm();
     onClose();
   };
 
-  const actionWord = itemType === 'tabs' ? 'close' : 'delete';
-  const actionWordCapitalized = itemType === 'tabs' ? 'Close' : 'Delete';
-  const itemWord = itemType === 'tabs' ? 'tab' : 'bookmark';
-  const itemWordPlural = itemType === 'tabs' ? 'tabs' : 'bookmarks';
+  const countNode = <strong>{itemCount}</strong>;
+  const dialogTitle = itemType === 'tabs'
+    ? t.dialogs.confirmDelete.closeTabsTitle(itemCount)
+    : t.dialogs.confirmDelete.deleteBookmarksTitle(itemCount);
+  const question = itemType === 'tabs'
+    ? t.dialogs.confirmDelete.closeTabsQuestion(countNode, itemCount)
+    : t.dialogs.confirmDelete.deleteBookmarksQuestion(countNode, itemCount);
+  const confirmLabel = itemType === 'tabs' ? t.common.close : t.common.delete;
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title={`${actionWordCapitalized} ${itemCount} ${itemCount === 1 ? itemWord : itemWordPlural}`} maxWidth="max-w-xs">
+    <Dialog isOpen={isOpen} onClose={onClose} title={dialogTitle} maxWidth="max-w-xs">
       <div className="flex flex-col">
         <div className="p-4">
           <p className="text-gray-700 dark:text-gray-300">
-            Are you sure you want to {actionWord} <strong>{itemCount}</strong> {itemCount === 1 ? itemWord : itemWordPlural}?
+            {question}
           </p>
           {details && (
             <p className="mt-1 text-[0.85em] text-gray-500 dark:text-gray-400">
@@ -45,7 +51,7 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
           )}
           {itemType === 'bookmarks' && (
             <p className="mt-2 text-[0.85em] text-gray-500 dark:text-gray-400">
-              This action cannot be undone.
+              {t.dialogs.confirmDelete.cannotBeUndone}
             </p>
           )}
         </div>
@@ -55,13 +61,13 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
             onClick={onClose}
             className="px-3 py-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleConfirm}
             className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
-            {actionWordCapitalized}
+            {confirmLabel}
           </button>
         </div>
       </div>

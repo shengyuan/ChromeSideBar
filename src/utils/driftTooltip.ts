@@ -1,12 +1,7 @@
+import { getMessages } from '../i18n';
+
 // Native tooltips wrap at roughly this width, so each line is cut to fit on one line
 const TOOLTIP_LINE_MAX = 40;
-
-// Label before the live tab's title in a drifted item's tooltip
-const DRIFT_TOOLTIP_NOW_LABEL = 'Now: ';
-
-// Last line of a drifted item's tooltip: how to go back to the saved URL
-export const PIN_GO_BACK_HINT = 'Double-click to go back';
-export const BOOKMARK_GO_BACK_HINT = 'Click icon to go back';
 
 function truncateForTooltip(text: string): string
 {
@@ -68,7 +63,7 @@ export function buildDriftTooltip(info: DriftTooltipInfo): string
   {
     if (info.showNowLine && info.liveTitle)
     {
-      lines.push(truncateForTooltip(`${DRIFT_TOOLTIP_NOW_LABEL}${info.liveTitle}`));
+      lines.push(truncateForTooltip(getMessages().notices.driftTooltip.nowLine(info.liveTitle)));
     }
     lines.push(info.goBackHint);
   }

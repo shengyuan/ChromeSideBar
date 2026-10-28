@@ -1,0 +1,23 @@
+{
+  "extName": {
+    "message": "給 Arc 使用者的側邊欄"
+  },
+  "extDescription": {
+    "message": "在側邊面板中提供類似 Arc 瀏覽器的釘選網站、書籤與分頁"
+  },
+  "actionTitle": {
+    "message": "開啟或關閉側邊欄"
+  },
+  "cmdToggleSidePanel": {
+    "message": "開啟或關閉側邊面板"
+  },
+  "cmdPrevUsedTab": {
+    "message": "上一個使用過的分頁"
+  },
+  "cmdNextUsedTab": {
+    "message": "下一個使用過的分頁"
+  },
+  "cmdOpenSpaceNavigator": {
+    "message": "開啟空間導覽"
+  }
+}

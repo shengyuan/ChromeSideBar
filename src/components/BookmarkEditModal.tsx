@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 
 export interface BookmarkEditModalProps
 {
@@ -20,6 +21,7 @@ export const BookmarkEditModal = ({
   onClose
 }: BookmarkEditModalProps) =>
 {
+  const t = useT();
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -86,8 +88,8 @@ export const BookmarkEditModal = ({
     onClose();
   };
 
-  const dialogTitle = isCreateMode ? 'New Bookmark' : `Edit ${isFolder ? 'Folder' : 'Bookmark'}`;
-  const submitButtonText = isCreateMode ? 'Create' : 'Save';
+  const dialogTitle = isCreateMode ? t.dialogs.newBookmark : (isFolder ? t.dialogs.editFolder : t.dialogs.editBookmark);
+  const submitButtonText = isCreateMode ? t.common.create : t.common.save;
 
   return (
     <Dialog
@@ -98,7 +100,7 @@ export const BookmarkEditModal = ({
     >
       <form onSubmit={handleSubmit} className="p-4 space-y-3">
         <div>
-          <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">Name</label>
+          <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">{t.common.name}</label>
           <input
             ref={inputRef}
             className="w-full px-2 py-1.5 border rounded-md dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
@@ -109,7 +111,7 @@ export const BookmarkEditModal = ({
 
         {(isCreateMode || !isFolder) && (
           <div>
-            <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">URL</label>
+            <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">{t.common.url}</label>
             <input
               className="w-full px-2 py-1.5 border rounded-md dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               value={url}
@@ -129,7 +131,7 @@ export const BookmarkEditModal = ({
             onClick={onClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             type="submit"

@@ -9,6 +9,7 @@ import { GROUP_COLOR_OPTIONS } from '../utils/groupColors';
 import { getIconUrl } from '../utils/iconify';
 import { isEmoji } from '../utils/emoji';
 import { Folder, FolderOpen } from 'lucide-react';
+import { useT } from '../i18n';
 
 interface SpaceEditDialogProps
 {
@@ -25,13 +26,6 @@ interface SpaceEditDialogProps
   }) => void | Promise<void>;
 }
 
-// Convert GROUP_COLOR_OPTIONS to ColorOption format for IconColorPicker
-const SPACE_COLOR_OPTIONS: ColorOption[] = GROUP_COLOR_OPTIONS.map((opt) => ({
-  value: opt.value,
-  name: opt.value.charAt(0).toUpperCase() + opt.value.slice(1),
-  className: opt.dot,
-}));
-
 export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
   isOpen,
   space,
@@ -40,8 +34,16 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
   onSave,
 }) =>
 {
+  const t = useT();
   const isCreateMode = space === null;
   const { createFolder, getBookmarkSegments, findFolderBySegments, getRootFolder } = useBookmarks();
+
+  // Convert GROUP_COLOR_OPTIONS to ColorOption format for IconColorPicker
+  const spaceColorOptions: ColorOption[] = useMemo(() => GROUP_COLOR_OPTIONS.map((opt) => ({
+    value: opt.value,
+    name: t.spaces.colorNames[opt.value],
+    className: opt.dot,
+  })), [t]);
 
   // Form state
   const [name, setName] = useState('');
@@ -96,7 +98,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
     const trimmedValue = value.trim();
     if (!trimmedValue)
     {
-      setNameError('Name is required');
+      setNameError(t.spaces.editDialog.nameRequired);
       return false;
     }
 
@@ -107,13 +109,13 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
     );
     if (isDuplicate)
     {
-      setNameError('A space with this name already exists');
+      setNameError(t.spaces.editDialog.duplicateName);
       return false;
     }
 
     setNameError('');
     return true;
-  }, [existingSpaces, space]);
+  }, [existingSpaces, space, t]);
 
   // Debounced validation as user types
   useEffect(() =>
@@ -179,7 +181,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
       const otherBookmarks = getRootFolder('other');
       if (!otherBookmarks)
       {
-        setNameError('Cannot find the Other Bookmarks folder');
+        setNameError(t.spaces.editDialog.otherBookmarksNotFound);
         return;
       }
 
@@ -219,7 +221,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
       const folder = findFolderBySegments(bookmarkFolderSegments);
       if (!folder)
       {
-        setNameError('Selected folder no longer exists');
+        setNameError(t.spaces.editDialog.folderNoLongerExists);
         return;
       }
     }
@@ -246,7 +248,8 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
     getBookmarkSegments,
     getRootFolder,
     onSave,
-    onClose
+    onClose,
+    t
   ]);
 
   // Display text for folder section
@@ -256,12 +259,12 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
     {
       return bookmarkFolderPath;
     }
-    const otherBookmarksTitle = getRootFolder('other')?.title || 'Other Bookmarks';
+    const otherBookmarksTitle = getRootFolder('other')?.title || t.spaces.editDialog.otherBookmarksFallback;
     if (name.trim())
     {
       return `${otherBookmarksTitle}/${name.trim()}`;
     }
-    return `${otherBookmarksTitle}/{name}`;
+    return `${otherBookmarksTitle}/${t.spaces.editDialog.folderNamePlaceholder}`;
   };
 
   // Handle emoji selection - sets icon to the emoji string
@@ -312,7 +315,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
       <Dialog
         isOpen={isOpen}
         onClose={onClose}
-        title={isCreateMode ? 'Create Space' : 'Edit Space'}
+        title={isCreateMode ? t.spaces.editDialog.createTitle : t.spaces.editDialog.editTitle}
         maxWidth="max-w-sm"
       >
         <div className="flex flex-col">
@@ -321,14 +324,14 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
             {/* Name input */}
             <div>
               <label className="block font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name
+                {t.common.name}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onBlur={() => validateName(name)}
-                placeholder="Enter space name"
+                placeholder={t.spaces.editDialog.namePlaceholder}
                 className={clsx(
                   "w-full px-2 py-1.5 border rounded",
                   "dark:bg-gray-900 dark:text-white",
@@ -351,7 +354,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
               currentIconPreview={currentIconPreview}
               onIconSelect={handleIconSelect}
               onColorSelect={setColor}
-              colorOptions={SPACE_COLOR_OPTIONS}
+              colorOptions={spaceColorOptions}
               selectedEmoji={isEmoji(icon) ? icon : undefined}
               onEmojiSelect={handleEmojiSelect}
               iconGridHeight={90}
@@ -366,7 +369,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-1">
                 <label className="font-medium text-gray-700 dark:text-gray-300">
-                  Bookmark Folder
+                  {t.spaces.editDialog.bookmarkFolder}
                 </label>
                 <div className="relative group">
                   <span
@@ -375,7 +378,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
                     ?
                   </span>
                   <div className="absolute right-0 bottom-full mb-1 hidden group-hover:block w-48 px-2 py-1 text-[0.8em] text-white bg-gray-800 dark:bg-gray-700 rounded shadow-lg z-10 pointer-events-none">
-                    Bookmarks saved in this space will be stored in this folder.
+                    {t.spaces.editDialog.bookmarkFolderHelp}
                   </div>
                 </div>
               </div>
@@ -399,14 +402,14 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
               </div>
               {isCreateMode && !useExistingFolder && (
                 <p className="mt-1 text-[0.85em] text-gray-500 dark:text-gray-400">
-                  This folder will be created when saved
+                  {t.spaces.editDialog.folderWillBeCreated}
                 </p>
               )}
               <button
                 onClick={() => setShowFolderPicker(true)}
                 className="mt-1 px-2 py-1 text-[0.85em] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded border border-blue-300 dark:border-blue-600"
               >
-                Pick existing folder
+                {t.spaces.editDialog.pickExistingFolder}
               </button>
             </div>
           </div>
@@ -417,14 +420,14 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
               onClick={onClose}
               className="px-3 py-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
             >
-              Cancel
+              {t.common.cancel}
             </button>
             <button
               onClick={handleSave}
               disabled={!name.trim()}
               className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isCreateMode ? 'Create' : 'Save'}
+              {isCreateMode ? t.common.create : t.common.save}
             </button>
           </div>
         </div>
@@ -433,7 +436,7 @@ export const SpaceEditDialog: React.FC<SpaceEditDialogProps> = ({
       {/* Folder picker dialog */}
       <FolderPickerDialog
         isOpen={showFolderPicker}
-        title="Select Bookmark Folder"
+        title={t.spaces.editDialog.selectBookmarkFolder}
         onSelect={handleFolderSelect}
         onClose={() => setShowFolderPicker(false)}
       />

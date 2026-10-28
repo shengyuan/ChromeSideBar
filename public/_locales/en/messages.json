@@ -1,0 +1,30 @@
+{
+  "extName": {
+    "message": "Side Bar for Arc Users",
+    "description": "Extension name shown in Chrome"
+  },
+  "extDescription": {
+    "message": "Arc Browser like Pinned Sites, Bookmarks and Active Tabs in Side Panel",
+    "description": "Extension description shown in chrome://extensions and the Web Store"
+  },
+  "actionTitle": {
+    "message": "Toggle Chrome SideBar",
+    "description": "Tooltip of the toolbar button"
+  },
+  "cmdToggleSidePanel": {
+    "message": "Toggle Side Panel",
+    "description": "Keyboard shortcut description"
+  },
+  "cmdPrevUsedTab": {
+    "message": "Previous Used Tab",
+    "description": "Keyboard shortcut description"
+  },
+  "cmdNextUsedTab": {
+    "message": "Next Used Tab",
+    "description": "Keyboard shortcut description"
+  },
+  "cmdOpenSpaceNavigator": {
+    "message": "Open Space Navigator",
+    "description": "Keyboard shortcut description"
+  }
+}

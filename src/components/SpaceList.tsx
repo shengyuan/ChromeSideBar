@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { Space } from '../utils/spaceMessages';
+import { Space, ALL_SPACE } from '../utils/spaceMessages';
 import { LayoutGrid } from 'lucide-react';
 import { getIconUrl } from '../utils/iconify';
 import { isEmoji } from '../utils/emoji';
 import { GROUP_COLORS, getHexColorStyle } from '../utils/groupColors';
 import clsx from 'clsx';
+import { useT, type Messages } from '../i18n';
+
+// Name shown for a Space. The "All" Space's name is UI text, so it follows the UI language;
+// user-created Space names are user data and are shown as is.
+export function getSpaceDisplayName(space: Space, t: Messages): string
+{
+  return space.id === ALL_SPACE.id ? t.spaces.allSpaceName : space.name;
+}
 
 // Maps a list index to its display key label (0-9 only; a-z no longer used as hotkeys).
 // firstKeyIsZero=true:  0->"0", 1->"1", ..., 9->"9", 10+->""
@@ -61,15 +69,16 @@ export function useSpaceListKeyboard({
   enabled?: boolean;
 }): { filteredSpaces: readonly Space[]; searchQuery: string; onSearchChange: (text: string) => void; searchInputRef: React.RefObject<HTMLInputElement> }
 {
+  const t = useT();
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Search-filter the input list; no-op when query is empty
+  // Search-filter the input list by the displayed name; no-op when query is empty
   const filteredSpaces = useMemo(() =>
     searchQuery
-      ? spaces.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      ? spaces.filter(s => getSpaceDisplayName(s, t).toLowerCase().includes(searchQuery.toLowerCase()))
       : spaces,
-    [spaces, searchQuery]
+    [spaces, searchQuery, t]
   );
 
   // Reset highlight to first result whenever the query changes
@@ -301,6 +310,7 @@ export const SpaceList = ({
   errorMessage,
 }: SpaceListProps) =>
 {
+  const t = useT();
   const isSearching = Boolean(searchQuery);
 
   return (
@@ -313,7 +323,7 @@ export const SpaceList = ({
             type="text"
             value={searchQuery ?? ''}
             onChange={e => onSearchChange(e.target.value)}
-            placeholder="Search spaces..."
+            placeholder={t.spaces.searchSpacesPlaceholder}
             className={clsx(
               "w-full px-2 py-1 text-xs rounded border outline-none",
               "bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-200",
@@ -328,7 +338,7 @@ export const SpaceList = ({
       <div className="py-1">
       {spaces.length === 0 ? (
         <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-          {isSearching ? 'No matches' : 'No spaces available'}
+          {isSearching ? t.spaces.noMatches : t.spaces.noSpacesAvailable}
         </div>
       ) : (
         spaces.map((space, index) =>
@@ -376,14 +386,14 @@ export const SpaceList = ({
                 "truncate flex-1 text-sm",
                 disabled ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-700 dark:text-gray-200"
               )}>
-                {space.name}
+                {getSpaceDisplayName(space, t)}
               </span>
 
               {/* Status indicator */}
               {disabled ? (
-                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">No folder</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">{t.spaces.noFolder}</span>
               ) : showCurrentIndicator && isActive && (
-                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">current</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">{t.spaces.current}</span>
               )}
             </button>
           );

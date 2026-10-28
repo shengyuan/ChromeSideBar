@@ -1,8 +1,9 @@
 import { useCallback, useState, useMemo, useRef } from 'react';
 import { QuickDismissDialog } from './QuickDismissDialog';
-import { SpaceList, useSpaceListKeyboard, useSpaceListHighlight } from './SpaceList';
+import { SpaceList, useSpaceListKeyboard, useSpaceListHighlight, getSpaceDisplayName } from './SpaceList';
 import { useSpacesContext } from '../contexts/SpacesContext';
 import { Space } from '../utils/spaceMessages';
+import { useT } from '../i18n';
 
 export interface SpaceNavigatorDialogProps
 {
@@ -21,7 +22,7 @@ export interface SpaceNavigatorDialogProps
 export const SpaceNavigatorDialog = ({
   isOpen,
   onClose,
-  title = 'Navigate to Space',
+  title,
   hideAllSpace = false,
   excludeSpaceId,
   requireBookmarkFolder = false,
@@ -29,6 +30,7 @@ export const SpaceNavigatorDialog = ({
   showCurrentIndicator = true
 }: SpaceNavigatorDialogProps) =>
 {
+  const t = useT();
   const { allSpaces, spaces, switchToSpace, activeSpaceId } = useSpacesContext();
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export const SpaceNavigatorDialog = ({
   {
     if (isDisabled)
     {
-      setErrorMessage(`"${spaceName}" has no bookmark folder configured`);
+      setErrorMessage(t.spaces.noBookmarkFolderConfigured(spaceName));
       return;
     }
 
@@ -72,15 +74,15 @@ export const SpaceNavigatorDialog = ({
       switchToSpace(spaceId);
     }
     onClose();
-  }, [switchToSpace, onSelectSpace, onClose]);
+  }, [switchToSpace, onSelectSpace, onClose, t]);
 
   // Unified select handler used by both SpaceList clicks and keyboard shortcuts
   const handleSelect = useCallback((spaceId: string) =>
   {
     const space = filteredSpaces.find(s => s.id === spaceId);
     if (!space) return;
-    handleSelectSpace(spaceId, space.name, isItemDisabled(space));
-  }, [filteredSpaces, handleSelectSpace, isItemDisabled]);
+    handleSelectSpace(spaceId, getSpaceDisplayName(space, t), isItemDisabled(space));
+  }, [filteredSpaces, handleSelectSpace, isItemDisabled, t]);
 
   // Clears error and scrolls to the active space whenever the dialog opens
   const clearError = useCallback(() => setErrorMessage(null), []);
@@ -104,7 +106,7 @@ export const SpaceNavigatorDialog = ({
   });
 
   return (
-    <QuickDismissDialog isOpen={isOpen} onClose={onClose} title={title}>
+    <QuickDismissDialog isOpen={isOpen} onClose={onClose} title={title ?? t.spaces.navigateToSpace}>
       <SpaceList
         spaces={displaySpaces}
         highlightedIndex={highlightedIndex}

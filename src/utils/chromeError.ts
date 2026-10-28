@@ -1,3 +1,5 @@
+import { getMessages } from '../i18n';
+
 /**
  * Creates a Chrome API error handler for use in hooks.
  * @param context - Name for error logging (e.g., "Tab", "Bookmark")
@@ -15,7 +17,7 @@ export const createChromeErrorHandler = (
     if (err)
     {
       console.error(`${context} ${operation} error:`, err.message);
-      setError(err.message || `Failed to ${operation}`);
+      setError(err.message || getMessages().notices.operationFailed(operation));
       return true;
     }
     setError(null);

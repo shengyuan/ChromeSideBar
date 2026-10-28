@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Side Bar for Arc Users",
-  "version": "1.0.352",
-  "description": "Arc Browser like Pinned Sites, Bookmarks and Active Tabs in Side Panel",
+  "name": "__MSG_extName__",
+  "version": "1.0.353",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
   "permissions": [
     "sidePanel",
     "bookmarks",
@@ -17,7 +18,7 @@
     "128": "icon.png"
   },
   "action": {
-    "default_title": "Toggle Chrome SideBar",
+    "default_title": "__MSG_actionTitle__",
     "default_icon": {
       "16": "icon16.png",
       "32": "icon32.png"
@@ -36,28 +37,28 @@
         "default": "Ctrl+Shift+E",
         "mac": "Command+Shift+E"
       },
-      "description": "Toggle Side Panel"
+      "description": "__MSG_cmdToggleSidePanel__"
     },
     "prev-used-tab": {
       "suggested_key": {
         "default": "Ctrl+Shift+Comma",
         "mac": "Command+Shift+Comma"
       },
-      "description": "Previous Used Tab"
+      "description": "__MSG_cmdPrevUsedTab__"
     },
     "next-used-tab": {
       "suggested_key": {
         "default": "Ctrl+Shift+Period",
         "mac": "Command+Shift+Period"
       },
-      "description": "Next Used Tab"
+      "description": "__MSG_cmdNextUsedTab__"
     },
     "open-space-navigator": {
       "suggested_key": {
         "default": "Ctrl+Shift+S",
         "mac": "Command+Shift+S"
       },
-      "description": "Open Space Navigator"
+      "description": "__MSG_cmdOpenSpaceNavigator__"
     }
   }
 }

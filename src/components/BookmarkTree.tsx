@@ -62,8 +62,9 @@ import { UndoableAction } from '../actions/types';
 import { DeleteBookmarkAction } from '../actions/deleteBookmarkAction';
 import { CloseTabAction } from '../actions/closeTabAction';
 import { HoverHint } from './HoverHint';
-import { BOOKMARK_GO_BACK_HINT, buildDriftTooltip } from '../utils/driftTooltip';
+import { buildDriftTooltip } from '../utils/driftTooltip';
 import { getRootFolderType, isRootFolder } from '../utils/bookmarkRoots';
+import { useT } from '../i18n';
 
 // Storage key for persisting folder expand/collapse state across restarts (keyed by space only)
 const getExpandedStateKey = (spaceId: string) =>
@@ -73,8 +74,6 @@ const getExpandedStateKey = (spaceId: string) =>
 // away from the saved URL (reads as "bookmark / current page", like Arc)
 const BOOKMARK_DRIFT_MARKER = '/';
 
-// Instant hover hint on a drifted bookmark's favicon and drift marker
-const BOOKMARK_DRIFT_HINT = 'Click to go back to the bookmarked URL';
 // Align the drift hint with the row's title so the cursor doesn't cover it
 const getBookmarkRowTitle = (anchor: HTMLElement) =>
   anchor.closest('[data-bookmark-id]')?.querySelector('[data-tree-row-title]');
@@ -239,6 +238,9 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
   listeners,
   windowId,
 }, ref) => {
+  const t = useT();
+  // Instant hover hint on a drifted bookmark's favicon and drift marker
+  const driftHint = t.bookmarks.rowActions.driftHint;
   const isFolder = !node.url;
   const dndId = `bookmark-${node.id}`;
   const isSpecialFolder = isRootFolder(node);
@@ -346,13 +348,13 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
     <SpaceFolderIcon space={matchingSpace} />
   ) : node.url ? (
     isDrifted && onResetBookmark ? (
-      <HoverHint text={BOOKMARK_DRIFT_HINT} getAlignElement={getBookmarkRowTitle} className="flex items-center justify-center">
+      <HoverHint text={driftHint} getAlignElement={getBookmarkRowTitle} className="flex items-center justify-center">
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={handleResetClick}
           className="flex items-center justify-center w-4 h-4 border-0 bg-transparent p-0 cursor-pointer"
-          aria-label={BOOKMARK_DRIFT_HINT}
+          aria-label={driftHint}
         >
           {faviconImg}
           {fallbackIcon}
@@ -374,14 +376,14 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
   // gets real gap + vertical centering instead of absolute overflow onto the title.
   // Clicking the marker goes back to the bookmarked URL, same as the favicon.
   const driftIndicator = !isFolder && isDrifted && onResetBookmark ? (
-    <HoverHint text={BOOKMARK_DRIFT_HINT} getAlignElement={getBookmarkRowTitle} className="flex items-center">
+    <HoverHint text={driftHint} getAlignElement={getBookmarkRowTitle} className="flex items-center">
       <button
         type="button"
         data-testid="bookmark-drift-marker"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={handleResetClick}
         className="border-0 bg-transparent p-0 ml-0.5 cursor-pointer [font-size:inherit] leading-none font-light text-gray-400 dark:text-gray-500 select-none"
-        aria-label={BOOKMARK_DRIFT_HINT}
+        aria-label={driftHint}
       >
         {BOOKMARK_DRIFT_MARKER}
       </button>
@@ -396,8 +398,8 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onPin(node.url!, node.title, getFaviconUrl(node.url!)); }}
           className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded bg-white dark:bg-gray-900 opacity-0 group-hover:opacity-100"
-          title="Pin"
-          aria-label="Pin bookmark"
+          title={t.bookmarks.rowActions.pin}
+          aria-label={t.bookmarks.rowActions.pinBookmark}
         >
           <Pin size={14} className="text-gray-700 dark:text-gray-200" />
         </button>
@@ -425,8 +427,8 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
             }
           }}
           className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded bg-white dark:bg-gray-900 opacity-0 group-hover:opacity-100"
-          title="Open tab"
-          aria-label="Open tab"
+          title={t.bookmarks.rowActions.openTab}
+          aria-label={t.bookmarks.rowActions.openTab}
         >
           <SquareArrowOutUpRight size={14} className="text-gray-700 dark:text-gray-200" />
         </button>
@@ -437,8 +439,8 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onCloseBookmark(node.id); }}
           className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded bg-white dark:bg-gray-900"
-          title="Close tab"
-          aria-label="Close tab"
+          title={t.bookmarks.rowActions.closeTab}
+          aria-label={t.bookmarks.rowActions.closeTab}
         >
           <X size={14} className="text-gray-700 dark:text-gray-200" />
         </button>
@@ -472,7 +474,7 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
                     liveTitle,
                     // The row already shows the tab's title when showLiveTitle is on
                     showNowLine: !showLiveTitle,
-                    goBackHint: BOOKMARK_GO_BACK_HINT,
+                    goBackHint: t.notices.driftTooltip.bookmarkGoBackHint,
                   })
                   : undefined
               }
@@ -516,42 +518,42 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
             <>
               {hasSelectedBookmarks && onPin && (
                 <ContextMenu.Item onSelect={() => onPin(node.url || '', node.title, node.url ? getFaviconUrl(node.url) : undefined)}>
-                  <Pin size={14} className="mr-2" /> Pin to Sidebar
+                  <Pin size={14} className="mr-2" /> {t.bookmarks.contextMenu.pinToSidebar}
                 </ContextMenu.Item>
               )}
               {hasSelectedBookmarks && onCopyUrls && (
                 <ContextMenu.Item onSelect={onCopyUrls}>
-                  <Link size={14} className="mr-2" /> Copy URLs
+                  <Link size={14} className="mr-2" /> {t.common.copyUrls}
                 </ContextMenu.Item>
               )}
               {hasSelectedBookmarks && (onPin || onCopyUrls) && (
                 <ContextMenu.Separator />
               )}
               <ContextMenu.Item onSelect={() => onOpenInNewTabs?.(node.url || '')}>
-                <ExternalLink size={14} className="mr-2" /> Open in New Tabs
+                <ExternalLink size={14} className="mr-2" /> {t.bookmarks.contextMenu.openInNewTabs}
               </ContextMenu.Item>
               <ContextMenu.Item onSelect={() => onOpenInNewWindow?.(node.url || '')}>
-                <ExternalLink size={14} className="mr-2" /> Open in New Window
+                <ExternalLink size={14} className="mr-2" /> {t.common.openInNewWindow}
               </ContextMenu.Item>
               <ContextMenu.Separator />
               {onMoveSelectedBookmarks && (
                 <ContextMenu.Item onSelect={onMoveSelectedBookmarks}>
-                  <FolderInput size={14} className="mr-2" /> Move Bookmarks...
+                  <FolderInput size={14} className="mr-2" /> {t.bookmarks.contextMenu.moveBookmarks}
                 </ContextMenu.Item>
               )}
               {onMoveSelectedToSpace && (
                 <ContextMenu.Item onSelect={onMoveSelectedToSpace}>
-                  <SquareStack size={14} className="mr-2" /> Move Bookmarks to Space...
+                  <SquareStack size={14} className="mr-2" /> {t.bookmarks.contextMenu.moveBookmarksToSpace}
                 </ContextMenu.Item>
               )}
               <ContextMenu.Separator />
               {allSelectedAreLive ? (
                 <ContextMenu.Item onSelect={onCloseSelectedBookmarks}>
-                  <X size={14} className="mr-2" /> Close {selectionCount} Bookmarks
+                  <X size={14} className="mr-2" /> {t.bookmarks.contextMenu.closeBookmarks(selectionCount)}
                 </ContextMenu.Item>
               ) : (
                 <ContextMenu.Item danger onSelect={() => onRemove(node.id)}>
-                  <Trash size={14} className="mr-2" /> Delete {selectionCount} Bookmarks
+                  <Trash size={14} className="mr-2" /> {t.bookmarks.contextMenu.deleteBookmarks(selectionCount)}
                 </ContextMenu.Item>
               )}
             </>
@@ -561,37 +563,37 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
           {isFolder && (
             <>
               <ContextMenu.Item onSelect={() => onCreateFolder(node.id)}>
-                <FolderPlus size={14} className="mr-2" /> New Folder
+                <FolderPlus size={14} className="mr-2" /> {t.bookmarks.contextMenu.newFolder}
               </ContextMenu.Item>
               <ContextMenu.Item onSelect={() => onCreateBookmark(node.id)}>
-                <FilePlus size={14} className="mr-2" /> New Bookmark
+                <FilePlus size={14} className="mr-2" /> {t.bookmarks.contextMenu.newBookmark}
               </ContextMenu.Item>
               {onExpandAll && (
                 <ContextMenu.Item onSelect={() => onExpandAll(node.id)}>
-                  <span className="w-[14px] mr-2" /> Expand All
+                  <span className="w-[14px] mr-2" /> {t.bookmarks.contextMenu.expandAll}
                 </ContextMenu.Item>
               )}
               <ContextMenu.Separator />
               <ContextMenu.Item onSelect={() => onSort(node.id, 'name')}>
-                <ArrowDownAZ size={14} className="mr-2" /> Sort by Name
+                <ArrowDownAZ size={14} className="mr-2" /> {t.bookmarks.contextMenu.sortByName}
               </ContextMenu.Item>
               <ContextMenu.Item onSelect={() => onSort(node.id, 'dateAdded')}>
-                <Calendar size={14} className="mr-2" /> Sort by Date
+                <Calendar size={14} className="mr-2" /> {t.bookmarks.contextMenu.sortByDate}
               </ContextMenu.Item>
               <ContextMenu.Separator />
               {onOpenAllTabs && (
                 <ContextMenu.Item onSelect={() => onOpenAllTabs(node.id)}>
-                  <ExternalLink size={14} className="mr-2" /> Open All Tabs
+                  <ExternalLink size={14} className="mr-2" /> {t.bookmarks.contextMenu.openAllTabs}
                 </ContextMenu.Item>
               )}
               {onOpenAllTabsInNewWindow && (
                 <ContextMenu.Item onSelect={() => onOpenAllTabsInNewWindow(node.id)}>
-                  <ExternalLink size={14} className="mr-2" /> Open All Tabs in New Window
+                  <ExternalLink size={14} className="mr-2" /> {t.bookmarks.contextMenu.openAllTabsInNewWindow}
                 </ContextMenu.Item>
               )}
               {onOpenAsTabGroup && (
                 <ContextMenu.Item onSelect={() => onOpenAsTabGroup(node.id, node.title)}>
-                  <FolderOpen size={14} className="mr-2" /> Open as Tab Group
+                  <FolderOpen size={14} className="mr-2" /> {t.bookmarks.contextMenu.openAsTabGroup}
                 </ContextMenu.Item>
               )}
               {(onOpenAsTabGroup || onOpenAllTabsInNewWindow) && (
@@ -599,12 +601,12 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
               )}
               {onMoveBookmark && !isSpecialFolder && (
                 <ContextMenu.Item onSelect={() => onMoveBookmark(node.id, true)}>
-                  <FolderInput size={14} className="mr-2" /> Move Folder...
+                  <FolderInput size={14} className="mr-2" /> {t.bookmarks.contextMenu.moveFolder}
                 </ContextMenu.Item>
               )}
               {onMoveToSpace && !isSpecialFolder && (
                 <ContextMenu.Item onSelect={() => onMoveToSpace(node.id, true)}>
-                  <SquareStack size={14} className="mr-2" /> Move Folder to Space...
+                  <SquareStack size={14} className="mr-2" /> {t.bookmarks.contextMenu.moveFolderToSpace}
                 </ContextMenu.Item>
               )}
             </>
@@ -613,36 +615,36 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
             <>
               {onPin && (
                 <ContextMenu.Item onSelect={() => onPin(node.url!, node.title, getFaviconUrl(node.url!))}>
-                  <Pin size={14} className="mr-2" /> Pin to Sidebar
+                  <Pin size={14} className="mr-2" /> {t.bookmarks.contextMenu.pinToSidebar}
                 </ContextMenu.Item>
               )}
               <ContextMenu.Item onSelect={() => onDuplicate(node.id)}>
-                <Copy size={14} className="mr-2" /> Duplicate
+                <Copy size={14} className="mr-2" /> {t.common.duplicate}
               </ContextMenu.Item>
               <ContextMenu.Item onSelect={() => onCopyUrl?.(node.url!)}>
-                <Link size={14} className="mr-2" /> Copy URL
+                <Link size={14} className="mr-2" /> {t.common.copyUrl}
               </ContextMenu.Item>
               <ContextMenu.Separator />
               <ContextMenu.Item onSelect={() => onOpenInNewTabs?.(node.url!)}>
-                <ExternalLink size={14} className="mr-2" /> Open in New Tab
+                <ExternalLink size={14} className="mr-2" /> {t.common.openInNewTab}
               </ContextMenu.Item>
               <ContextMenu.Item onSelect={() => onOpenInNewWindow?.(node.url!)}>
-                <ExternalLink size={14} className="mr-2" /> Open in New Window
+                <ExternalLink size={14} className="mr-2" /> {t.common.openInNewWindow}
               </ContextMenu.Item>
               <ContextMenu.Separator />
               {onMoveBookmark && (
                 <ContextMenu.Item onSelect={() => onMoveBookmark(node.id, false)}>
-                  <FolderInput size={14} className="mr-2" /> Move Bookmark...
+                  <FolderInput size={14} className="mr-2" /> {t.bookmarks.contextMenu.moveBookmark}
                 </ContextMenu.Item>
               )}
               {onMoveToSpace && (
                 <ContextMenu.Item onSelect={() => onMoveToSpace(node.id, false)}>
-                  <SquareStack size={14} className="mr-2" /> Move Bookmark to Space...
+                  <SquareStack size={14} className="mr-2" /> {t.bookmarks.contextMenu.moveBookmarkToSpace}
                 </ContextMenu.Item>
               )}
               {isLoaded && onMoveToTabs && (
                 <ContextMenu.Item onSelect={() => onMoveToTabs(node.id)}>
-                  <ArrowRightFromLine size={14} className="mr-2" /> Move To Tabs
+                  <ArrowRightFromLine size={14} className="mr-2" /> {t.bookmarks.contextMenu.moveToTabs}
                 </ContextMenu.Item>
               )}
             </>
@@ -653,30 +655,30 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
               {/* Saved URL: go back to it or replace it (when drifted), or edit it */}
               {isLoaded && isDrifted && onResetBookmark && node.url && (
                 <ContextMenu.Item onSelect={() => onResetBookmark(node.id, node.url!)}>
-                  <RotateCcw size={14} className="mr-2" /> Back to Bookmarked URL
+                  <RotateCcw size={14} className="mr-2" /> {t.bookmarks.contextMenu.backToBookmarkedUrl}
                 </ContextMenu.Item>
               )}
               {isLoaded && isDrifted && onReplaceBookmarkWithCurrent && node.url && (
                 <ContextMenu.Item onSelect={() => onReplaceBookmarkWithCurrent(node.id, node.title)}>
-                  <Replace size={14} className="mr-2" /> Replace Bookmarked URL with Current
+                  <Replace size={14} className="mr-2" /> {t.bookmarks.contextMenu.replaceBookmarkedUrlWithCurrent}
                 </ContextMenu.Item>
               )}
               <ContextMenu.Item onSelect={() => onEdit(node)}>
-                <Pencil size={14} className="mr-2" /> Edit...
+                <Pencil size={14} className="mr-2" /> {t.common.editEllipsis}
               </ContextMenu.Item>
               <ContextMenu.Separator />
               {isLoaded && !isFolder && onCloseBookmark ? (
                 <>
                   <ContextMenu.Item onSelect={() => onCloseBookmark(node.id)}>
-                    <X size={14} className="mr-2" /> Close Tab
+                    <X size={14} className="mr-2" /> {t.bookmarks.contextMenu.closeTab}
                   </ContextMenu.Item>
                   <ContextMenu.Item danger onSelect={() => onRemove(node.id)}>
-                    <Trash size={14} className="mr-2" /> Close Tab and Delete
+                    <Trash size={14} className="mr-2" /> {t.bookmarks.contextMenu.closeTabAndDelete}
                   </ContextMenu.Item>
                 </>
               ) : (
                 <ContextMenu.Item danger onSelect={() => onRemove(node.id)}>
-                  <Trash size={14} className="mr-2" /> Delete
+                  <Trash size={14} className="mr-2" /> {t.common.delete}
                 </ContextMenu.Item>
               )}
             </>
@@ -860,6 +862,7 @@ interface BookmarkTreeProps {
 }
 
 export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false, externalDropTarget, bookmarkOpenMode = 'arc', arcSingleClickOpensTab = true, arcShowTabTitleWhenDrifted = true, onResolverReady, filterLiveTabs = false, filterText = '', activeSpace, onShowToast, onPerformAction, useSpaces = true }: BookmarkTreeProps) => {
+  const t = useT();
   const { bookmarks, updateBookmark, createFolder, createBookmark, sortBookmarks, moveBookmark, duplicateBookmark, findFolderBySegments, getAllBookmarksInFolder, getBookmarkSegments, getBookmark, error } = useBookmarks();
   const {
     openBookmarkTab,
@@ -929,7 +932,7 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
 
     if (bookmarksList.length === 0)
     {
-      onShowToast?.('No bookmarks found in folder');
+      onShowToast?.(t.bookmarks.toast.noBookmarksInFolder);
       return;
     }
 
@@ -952,9 +955,9 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
       });
       // Activate the first tab in the group
       await chrome.tabs.update(createdTabIds[0], { active: true });
-      onShowToast?.(`Opened ${createdTabIds.length} tabs as "${folderName}"`);
+      onShowToast?.(t.bookmarks.toast.openedTabsAsGroup(createdTabIds.length, folderName));
     }
-  }, [getAllBookmarksInFolder, onShowToast, windowId]);
+  }, [getAllBookmarksInFolder, onShowToast, windowId, t]);
 
   // Open all bookmarks in folder as separate tabs (no grouping)
   const handleOpenAllTabs = useCallback(async (folderId: string) =>
@@ -962,15 +965,15 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
     const bookmarksList = await getAllBookmarksInFolder(folderId);
     if (bookmarksList.length === 0)
     {
-      onShowToast?.('No bookmarks found in folder');
+      onShowToast?.(t.bookmarks.toast.noBookmarksInFolder);
       return;
     }
     for (const bookmark of bookmarksList)
     {
       await chrome.tabs.create({ url: bookmark.url, active: false, windowId: windowId ?? undefined });
     }
-    onShowToast?.(`Opened ${bookmarksList.length} tabs`);
-  }, [getAllBookmarksInFolder, onShowToast, windowId]);
+    onShowToast?.(t.bookmarks.toast.openedTabs(bookmarksList.length));
+  }, [getAllBookmarksInFolder, onShowToast, windowId, t]);
 
   // Open all bookmarks in a new window
   const handleOpenAllTabsInNewWindow = useCallback(async (folderId: string) =>
@@ -978,13 +981,13 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
     const bookmarksList = await getAllBookmarksInFolder(folderId);
     if (bookmarksList.length === 0)
     {
-      onShowToast?.('No bookmarks found in folder');
+      onShowToast?.(t.bookmarks.toast.noBookmarksInFolder);
       return;
     }
     const urls = bookmarksList.map(b => b.url).filter(Boolean) as string[];
     await chrome.windows.create({ url: urls });
-    onShowToast?.(`Opened ${urls.length} tabs in new window`);
-  }, [getAllBookmarksInFolder, onShowToast]);
+    onShowToast?.(t.bookmarks.toast.openedTabsInNewWindow(urls.length));
+  }, [getAllBookmarksInFolder, onShowToast, t]);
 
   // Recursively filter bookmarks based on a predicate function
   const filterBookmarksRecursive = useCallback((
@@ -1673,39 +1676,39 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
     const space = spaces.find(s => s.id === spaceId);
     if (!space?.bookmarkFolderPath)
     {
-      return `"${space?.name || 'Space'}" has no bookmark folder configured`;
+      return t.bookmarks.moveToSpaceError.noBookmarkFolder(space?.name || t.bookmarks.moveToSpaceError.spaceFallbackName);
     }
 
     const folder = findFolderBySegments(space.bookmarkFolderSegments ?? []);
     if (!folder)
     {
-      return `Folder "${space.bookmarkFolderPath}" no longer exists`;
+      return t.bookmarks.moveToSpaceError.folderMissing(space.bookmarkFolderPath);
     }
 
     if (moveToSpaceDialog.isMulti)
     {
       await handleMoveSelectedBookmarksToFolder(folder.id);
-      onShowToast?.(`Moved selection to ${space.name}`);
+      onShowToast?.(t.bookmarks.toast.movedSelectionToSpace(space.name));
     }
     else
     {
       const bookmarkId = moveToSpaceDialog.bookmarkId;
-      if (!bookmarkId) return 'No bookmark selected';
+      if (!bookmarkId) return t.bookmarks.moveToSpaceError.noBookmarkSelected;
 
       try
       {
         await moveBookmark(bookmarkId, folder.id, 'into');
         await regroupAssociatedTab(bookmarkId, folder.id);
-        onShowToast?.(`Moved to ${space.name}. New location: ${space.bookmarkFolderPath}`);
+        onShowToast?.(t.bookmarks.toast.movedToSpace(space.name, space.bookmarkFolderPath));
       }
       catch (err)
       {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        return `Failed to move bookmark: ${message}`;
+        const message = err instanceof Error ? err.message : t.bookmarks.moveToSpaceError.unknownError;
+        return t.bookmarks.moveToSpaceError.moveFailed(message);
       }
     }
   }, [moveToSpaceDialog.bookmarkId, moveToSpaceDialog.isMulti, spaces, findFolderBySegments,
-    handleMoveSelectedBookmarksToFolder, moveBookmark, onShowToast, regroupAssociatedTab]);
+    handleMoveSelectedBookmarksToFolder, moveBookmark, onShowToast, regroupAssociatedTab, t]);
 
   // Check if selection has any bookmarks (vs only folders)
   const hasSelectedBookmarks = useCallback((): boolean =>
@@ -2186,17 +2189,17 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
     return (
       <>
         <div className="p-4 text-gray-500 dark:text-gray-400">
-          <span>Folder "{activeSpace?.bookmarkFolderPath}" not found. </span>
+          <span>{t.bookmarks.spaceFolderNotFound(activeSpace?.bookmarkFolderPath ?? '')}</span>
           <button
             className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 underline"
             onClick={() => setShowSpaceFolderPicker(true)}
           >
-            Pick new folder
+            {t.bookmarks.pickNewFolder}
           </button>
         </div>
         <FolderPickerDialog
           isOpen={showSpaceFolderPicker}
-          title="Select Bookmark Folder"
+          title={t.bookmarks.selectBookmarkFolder}
           onSelect={handleSpaceFolderSelected}
           onClose={() => setShowSpaceFolderPicker(false)}
         />
@@ -2290,8 +2293,8 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
         {hasFilters && !hasVisibleBookmarks && (
           <div className="p-4 text-gray-500 dark:text-gray-400 text-center">
             {filterText.trim()
-              ? `No bookmarks match "${filterText}"`
-              : 'No loaded tabs found'}
+              ? t.bookmarks.noBookmarksMatch(filterText)
+              : t.bookmarks.noLoadedTabs}
           </div>
         )}
 
@@ -2351,10 +2354,10 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
         isOpen={moveToSpaceDialog.isOpen}
         onClose={closeMoveToSpaceDialog}
         title={moveToSpaceDialog.isMulti
-          ? "Move Bookmarks to Space"
+          ? t.bookmarks.dialogTitle.moveBookmarksToSpace
           : moveToSpaceDialog.isFolder
-            ? "Move Folder to Space"
-            : "Move Bookmark to Space"}
+            ? t.bookmarks.dialogTitle.moveFolderToSpace
+            : t.bookmarks.dialogTitle.moveBookmarkToSpace}
         hideAllSpace
         excludeSpaceId={activeSpace?.id}
         requireBookmarkFolder
@@ -2364,7 +2367,7 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
 
       <FolderPickerDialog
         isOpen={moveBookmarkDialog.isOpen}
-        title={moveBookmarkDialog.isFolder ? "Move Folder to..." : "Move Bookmark to..."}
+        title={moveBookmarkDialog.isFolder ? t.bookmarks.dialogTitle.moveFolderTo : t.bookmarks.dialogTitle.moveBookmarkTo}
         onSelect={handleMoveBookmarkToFolder}
         onClose={closeMoveBookmarkDialog}
         defaultFolderId={moveBookmarkDialog.parentFolderId ?? undefined}
@@ -2372,7 +2375,7 @@ export const BookmarkTree = ({ onPin, onPinMultiple, hideOtherBookmarks = false,
 
       <FolderPickerDialog
         isOpen={moveMultiBookmarkDialog.isOpen}
-        title="Move to..."
+        title={t.bookmarks.dialogTitle.moveTo}
         onSelect={handleMoveSelectedBookmarksToFolder}
         onClose={() => setMoveMultiBookmarkDialog({ isOpen: false })}
       />

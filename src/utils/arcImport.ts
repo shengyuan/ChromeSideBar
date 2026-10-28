@@ -3,6 +3,7 @@ import { Space } from '../contexts/SpacesContext';
 import { importBookmarkNode, ImportResult } from './backupRestore';
 import { requireRootFolder } from './bookmarkRoots';
 import { toChromeColor } from './groupColors';
+import { getMessages } from '../i18n';
 
 // =============================================================================
 // Types
@@ -738,7 +739,7 @@ export async function importArcData(
       await callbacks.replaceSpaces(newSpaces);
       result.spacesCount = newSpaces.length;
       result.spacesCreated = newSpaces.length;
-      result.notes.push('Existing bookmarks were not modified');
+      result.notes.push(getMessages().notices.arcImport.existingBookmarksNotModified);
     }
     else
     {
@@ -774,7 +775,7 @@ export async function importArcData(
               const bmNode = arcNodeToBookmarkNode(node);
               result.bookmarksCount += await importBookmarkNode(bmNode, newFolderId);
             }
-            result.notes.push(`Folder for "${match.name}" not found, created new one`);
+            result.notes.push(getMessages().notices.arcImport.spaceFolderRecreated(match.name));
           }
           result.spacesMerged++;
         }

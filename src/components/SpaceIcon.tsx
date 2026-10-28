@@ -8,6 +8,7 @@ import { GROUP_COLORS, getHexColorStyle } from '../utils/groupColors';
 import { getIcon } from '../utils/spaceIcons';
 import { SpaceContextMenuContent } from './SpaceContextMenuContent';
 import { createSpaceDragData, DropData, DropPosition, DragFormat, acceptsFormats } from '../types/dragDrop';
+import { useT } from '../i18n';
 
 /**
  * Shared visual component for space icon rendering.
@@ -102,6 +103,7 @@ export const SpaceIcon: React.FC<SpaceIconProps> = ({
   dropPosition,
 }) =>
 {
+  const t = useT();
   const spaceId = `space-${space.id}`;
 
   // useSortable combines draggable + droppable
@@ -141,7 +143,7 @@ export const SpaceIcon: React.FC<SpaceIconProps> = ({
       ref={setNodeRef}
       style={style}
       onClick={onClick}
-      title={space.name}
+      title={isAllSpace ? t.spaces.allSpaceName : space.name}
       data-space-id={space.id}
       data-space-button="true"
       data-dnd-id={spaceId}
@@ -171,7 +173,7 @@ export const SpaceIcon: React.FC<SpaceIconProps> = ({
                 : "text-[#5F6368] dark:text-[#BDC1C6]"      // grey.text
             )}
           >
-            ALL
+            {t.spaces.allSpaceBadge}
           </span>
         </div>
       ) : (

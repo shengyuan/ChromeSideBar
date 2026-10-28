@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Dialog } from './Dialog';
 import { FollowActiveTabMode } from '../utils/followActiveTab';
+import { useT, LanguageSetting, LOCALE_NATIVE_NAMES, SUPPORTED_LOCALES, resolveLocale } from '../i18n';
 
 export type BookmarkOpenMode = 'arc' | 'newTab' | 'activeTab';
 export type TabGroupDisplayOrder = 'groupsFirst' | 'groupsLast' | 'chromeOrder';
@@ -18,6 +19,7 @@ export interface SettingsValues {
   useSpaceColor: boolean;
   spaceColorAlpha: number;  // 1-100 percent
   followActiveTab: FollowActiveTabMode;
+  language: LanguageSetting;
 }
 
 interface SettingsDialogProps {
@@ -35,6 +37,7 @@ export function SettingsDialog({
   settings,
   onApply,
 }: SettingsDialogProps) {
+  const t = useT();
   // Temporary state for the dialog
   const [tempFontSize, setTempFontSize] = useState(settings.fontSize);
   const [tempHideOtherBookmarks, setTempHideOtherBookmarks] = useState(settings.hideOtherBookmarks);
@@ -48,6 +51,7 @@ export function SettingsDialog({
   const [tempUseSpaceColor, setTempUseSpaceColor] = useState(settings.useSpaceColor);
   const [tempSpaceColorAlpha, setTempSpaceColorAlpha] = useState(settings.spaceColorAlpha);
   const [tempFollowActiveTab, setTempFollowActiveTab] = useState(settings.followActiveTab);
+  const [tempLanguage, setTempLanguage] = useState(settings.language);
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
 
   // Track previous isOpen to detect when dialog opens
@@ -77,6 +81,7 @@ export function SettingsDialog({
       setTempUseSpaceColor(settings.useSpaceColor);
       setTempSpaceColorAlpha(settings.spaceColorAlpha);
       setTempFollowActiveTab(settings.followActiveTab);
+      setTempLanguage(settings.language);
       setActiveTab('appearance');
     }
     wasOpen.current = isOpen;
@@ -96,6 +101,7 @@ export function SettingsDialog({
       useSpaceColor: tempUseSpaceColor,
       spaceColorAlpha: tempSpaceColorAlpha,
       followActiveTab: tempFollowActiveTab,
+      language: tempLanguage,
     });
   };
 
@@ -126,26 +132,26 @@ export function SettingsDialog({
         onClick={onClose}
         className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
       >
-        Cancel
+        {t.common.cancel}
       </button>
       <button
         onClick={handleApply}
         className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
       >
-        Apply
+        {t.common.apply}
       </button>
     </div>
   );
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Settings" maxWidth="max-w-xs" footer={footerButtons}>
+    <Dialog isOpen={isOpen} onClose={onClose} title={t.settings.title} maxWidth="max-w-xs" footer={footerButtons}>
       {/* Tab bar - sticky so it doesn't scroll away */}
       <div className="sticky top-0 bg-white dark:bg-gray-800 flex border-b border-gray-200 dark:border-gray-700 z-10">
         <button onClick={() => setActiveTab('appearance')} className={tabClass('appearance')}>
-          Appearance
+          {t.settings.tabAppearance}
         </button>
         <button onClick={() => setActiveTab('behaviour')} className={tabClass('behaviour')}>
-          Behaviour
+          {t.settings.tabBehaviour}
         </button>
         {import.meta.env.DEV && (
           <button onClick={() => setActiveTab('debug')} className={tabClass('debug')}>
@@ -157,10 +163,33 @@ export function SettingsDialog({
       <div className="p-3 space-y-3">
         {activeTab === 'appearance' && (
           <>
+            {/* Language */}
+            <div>
+              <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+                {t.settings.language}
+              </label>
+              <select
+                value={tempLanguage}
+                onChange={(e) => setTempLanguage(e.target.value as LanguageSetting)}
+                className="w-full px-2 py-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="auto">
+                  {t.settings.languageFollowChrome(LOCALE_NATIVE_NAMES[resolveLocale('auto', chrome.i18n.getUILanguage())])}
+                </option>
+                {/* Each language is listed by its own name, whatever the current UI language */}
+                {SUPPORTED_LOCALES.map(locale => (
+                  <option key={locale} value={locale}>{LOCALE_NATIVE_NAMES[locale]}</option>
+                ))}
+              </select>
+              <p className="mt-1 text-gray-500 dark:text-gray-400">
+                {t.settings.languageHint}
+              </p>
+            </div>
+
             {/* Font Size */}
             <div>
               <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                Font Size (px)
+                {t.settings.fontSize}
               </label>
               <input
                 type="number"
@@ -171,14 +200,14 @@ export function SettingsDialog({
                 className="w-full px-2 py-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <p className="mt-1 text-gray-500 dark:text-gray-400">
-                Default: 14px
+                {t.settings.defaultSize(14)}
               </p>
             </div>
 
             {/* Pinned Icon Size */}
             <div>
               <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                Pinned Icon Size (px)
+                {t.settings.pinnedIconSize}
               </label>
               <input
                 type="number"
@@ -189,7 +218,7 @@ export function SettingsDialog({
                 className="w-full px-2 py-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               />
               <p className="mt-1 text-gray-500 dark:text-gray-400">
-                Default: 22px
+                {t.settings.defaultSize(22)}
               </p>
             </div>
 
@@ -202,18 +231,18 @@ export function SettingsDialog({
                   onChange={(e) => setTempUseSpaceColor(e.target.checked)}
                   className="rounded border-gray-300 dark:border-gray-600"
                 />
-                Use space colour as sidebar background
+                {t.settings.useSpaceColor}
               </label>
               <p className="mt-0.5 text-gray-500 dark:text-gray-400 ml-5">
                 {tempUseSpaceColor
-                  ? "Tints the sidebar with the active space's colour"
-                  : "Sidebar uses the default background colour"}
+                  ? t.settings.useSpaceColorOnHint
+                  : t.settings.useSpaceColorOffHint}
               </p>
               {tempUseSpaceColor && (
                 <div className="ml-5 mt-1">
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-gray-700 dark:text-gray-300">
-                      Intensity
+                      {t.settings.spaceColorIntensity}
                     </label>
                     <span className="text-gray-500 dark:text-gray-400">
                       {tempSpaceColorAlpha}%
@@ -238,21 +267,21 @@ export function SettingsDialog({
             {/* Open bookmark mode */}
             <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Open bookmark
+                {t.settings.openBookmark}
               </label>
               <select
                 value={tempBookmarkOpenMode}
                 onChange={(e) => setTempBookmarkOpenMode(e.target.value as BookmarkOpenMode)}
                 className="w-full px-2 py-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                <option value="arc">Arc style</option>
-                <option value="newTab">In new tab</option>
-                <option value="activeTab">In active tab</option>
+                <option value="arc">{t.settings.openBookmarkArc}</option>
+                <option value="newTab">{t.settings.openBookmarkNewTab}</option>
+                <option value="activeTab">{t.settings.openBookmarkActiveTab}</option>
               </select>
               <p className="mt-1 text-gray-500 dark:text-gray-400">
-                {tempBookmarkOpenMode === 'arc' && 'Bookmarks act as persistent tabs in a group'}
-                {tempBookmarkOpenMode === 'newTab' && 'Opens bookmark in a new background tab'}
-                {tempBookmarkOpenMode === 'activeTab' && 'Replaces the current tab with the bookmark'}
+                {tempBookmarkOpenMode === 'arc' && t.settings.openBookmarkArcHint}
+                {tempBookmarkOpenMode === 'newTab' && t.settings.openBookmarkNewTabHint}
+                {tempBookmarkOpenMode === 'activeTab' && t.settings.openBookmarkActiveTabHint}
               </p>
             </div>
 
@@ -266,12 +295,12 @@ export function SettingsDialog({
                     onChange={(e) => setTempArcSingleClickOpensTab(e.target.checked)}
                     className="rounded border-gray-300 dark:border-gray-600"
                   />
-                  Single click opens live tab
+                  {t.settings.singleClickOpensTab}
                 </label>
                 <p className="mt-0.5 text-gray-500 dark:text-gray-400 ml-5">
                   {tempArcSingleClickOpensTab
-                    ? "Single click opens the bookmark as a live tab"
-                    : "Single click selects; use the hover open button to load"}
+                    ? t.settings.singleClickOpensTabOnHint
+                    : t.settings.singleClickOpensTabOffHint}
                 </p>
               </div>
             )}
@@ -286,12 +315,12 @@ export function SettingsDialog({
                     onChange={(e) => setTempArcShowTabTitleWhenDrifted(e.target.checked)}
                     className="rounded border-gray-300 dark:border-gray-600"
                   />
-                  Show tab title after navigating away
+                  {t.settings.showTabTitleWhenDrifted}
                 </label>
                 <p className="mt-0.5 text-gray-500 dark:text-gray-400 ml-5">
                   {tempArcShowTabTitleWhenDrifted
-                    ? "A bookmark shows the tab's title once its tab leaves the bookmarked URL"
-                    : "A bookmark always shows its own name"}
+                    ? t.settings.showTabTitleWhenDriftedOnHint
+                    : t.settings.showTabTitleWhenDriftedOffHint}
                 </p>
               </div>
             )}
@@ -305,12 +334,12 @@ export function SettingsDialog({
                   onChange={(e) => setTempUseSpaces(e.target.checked)}
                   className="rounded border-gray-300 dark:border-gray-600"
                 />
-                Show Spaces
+                {t.settings.showSpaces}
               </label>
               <p className="mt-0.5 text-gray-500 dark:text-gray-400 ml-5">
                 {tempUseSpaces
-                  ? "Organize tabs and bookmarks into focused workspaces"
-                  : "All tabs, tab groups, and bookmarks shown in one list"}
+                  ? t.settings.showSpacesOnHint
+                  : t.settings.showSpacesOffHint}
               </p>
             </div>
 
@@ -323,55 +352,55 @@ export function SettingsDialog({
                   onChange={(e) => setTempAudioQuickJump(e.target.checked)}
                   className="rounded border-gray-300 dark:border-gray-600"
                 />
-                Audio button: click to jump, hold to show list
+                {t.settings.audioQuickJump}
               </label>
               <p className="mt-0.5 text-gray-500 dark:text-gray-400 ml-5">
                 {tempAudioQuickJump
-                  ? "Click jumps to the latest playing tab; hold opens the audio tabs list"
-                  : "Click opens the audio tabs list"}
+                  ? t.settings.audioQuickJumpOnHint
+                  : t.settings.audioQuickJumpOffHint}
               </p>
             </div>
 
             {/* Follow active tab */}
             <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Follow active tab
+                {t.settings.followActiveTab}
               </label>
               <select
                 value={tempFollowActiveTab}
                 onChange={(e) => setTempFollowActiveTab(e.target.value as FollowActiveTabMode)}
                 className="w-full px-2 py-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                <option value="space-and-scroll">Switch space and show the tab</option>
-                <option value="space">Switch to the tab's space</option>
-                <option value="off">Off</option>
+                <option value="space-and-scroll">{t.settings.followActiveTabSpaceAndScroll}</option>
+                <option value="space">{t.settings.followActiveTabSpace}</option>
+                <option value="off">{t.common.off}</option>
               </select>
               <p className="mt-0.5 text-gray-500 dark:text-gray-400 ml-5">
                 {tempFollowActiveTab === 'space-and-scroll' &&
-                  "Always scroll to show the active tab, switching space when needed"}
+                  t.settings.followActiveTabSpaceAndScrollHint}
                 {tempFollowActiveTab === 'space' &&
-                  "Switch to the active tab's space; only scroll when the space changes"}
+                  t.settings.followActiveTabSpaceHint}
                 {tempFollowActiveTab === 'off' &&
-                  "Sidebar stays put when you switch tabs"}
+                  t.settings.followActiveTabOffHint}
               </p>
             </div>
 
             {/* Tab group display order */}
             <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-1">
-                Tab group display order
+                {t.settings.tabGroupDisplayOrder}
               </label>
               <select
                 value={tempTabGroupDisplayOrder}
                 onChange={(e) => setTempTabGroupDisplayOrder(e.target.value as TabGroupDisplayOrder)}
                 className="w-full px-2 py-1 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               >
-                <option value="groupsFirst">Groups before ungrouped tabs</option>
-                <option value="groupsLast">Groups after ungrouped tabs</option>
-                <option value="chromeOrder">Chrome's native order</option>
+                <option value="groupsFirst">{t.settings.tabGroupOrderGroupsFirst}</option>
+                <option value="groupsLast">{t.settings.tabGroupOrderGroupsLast}</option>
+                <option value="chromeOrder">{t.settings.tabGroupOrderChrome}</option>
               </select>
               <p className="mt-0.5 text-gray-500 dark:text-gray-400 ml-5">
-                Only applies in the All view
+                {t.settings.tabGroupDisplayOrderHint}
               </p>
             </div>
           </>

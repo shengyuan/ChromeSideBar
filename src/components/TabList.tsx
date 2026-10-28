@@ -64,6 +64,7 @@ import { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 import clsx from 'clsx';
 import { GROUP_COLORS } from '../utils/groupColors';
 import { getIcon } from '../utils/spaceIcons';
+import { useT } from '../i18n';
 
 const getTabGroupExpandedStateKey = (windowId: number) => `tabGroupExpandedState_${windowId}`;
 
@@ -143,6 +144,7 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
   attributes,
   listeners,
 }, ref) => {
+  const t = useT();
   const dndId = `tab-${tab.id}`;
   const icon = tab.favIconUrl ? (
     <Favicon src={tab.favIconUrl} className="w-4 h-4 flex-shrink-0" />
@@ -161,8 +163,8 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
             onPin(tab.url!, tab.title || tab.url!, tab.favIconUrl);
           }}
           className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 rounded"
-          title="Pin"
-          aria-label="Pin tab"
+          title={t.tabs.pin}
+          aria-label={t.tabs.pinTabAriaLabel}
         >
           <Pin size={14} className="text-gray-700 dark:text-gray-200" />
         </button>
@@ -175,7 +177,7 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
           if (tab.id) onClose(tab.id);
         }}
         className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 rounded"
-        aria-label="Close tab"
+        aria-label={t.tabs.closeTabAriaLabel}
       >
         <X size={14} className="text-gray-700 dark:text-gray-200" />
       </button>
@@ -268,12 +270,12 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
             <>
               {hasSelectedTabs && onPin && (
                 <ContextMenu.Item onSelect={() => onPin(tab.url || '', tab.title || tab.url || '', tab.favIconUrl)}>
-                  <Pin size={14} className="mr-2" /> Pin to Sidebar
+                  <Pin size={14} className="mr-2" /> {t.tabs.contextMenu.pinToSidebar}
                 </ContextMenu.Item>
               )}
               {hasSelectedTabs && onCopyUrls && (
                 <ContextMenu.Item onSelect={onCopyUrls}>
-                  <Link size={14} className="mr-2" /> Copy URLs
+                  <Link size={14} className="mr-2" /> {t.common.copyUrls}
                 </ContextMenu.Item>
               )}
               {hasSelectedTabs && (onPin || onCopyUrls) && (
@@ -281,22 +283,22 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
               )}
               {onAddSelectedToBookmark && (
                 <ContextMenu.Item onSelect={onAddSelectedToBookmark}>
-                  <Bookmark size={14} className="mr-2" /> Add to Bookmark...
+                  <Bookmark size={14} className="mr-2" /> {t.tabs.contextMenu.addToBookmark}
                 </ContextMenu.Item>
               )}
               {onMoveSelectedToSpace && (
                 <ContextMenu.Item onSelect={onMoveSelectedToSpace}>
-                  <SquareStack size={14} className="mr-2" /> Move Tabs to Space...
+                  <SquareStack size={14} className="mr-2" /> {t.tabs.contextMenu.moveTabsToSpace}
                 </ContextMenu.Item>
               )}
               {onMoveSelectedToNewWindow && (
                 <ContextMenu.Item onSelect={onMoveSelectedToNewWindow}>
-                  <ExternalLink size={14} className="mr-2" /> Move to New Window
+                  <ExternalLink size={14} className="mr-2" /> {t.tabs.contextMenu.moveToNewWindow}
                 </ContextMenu.Item>
               )}
               <ContextMenu.Separator />
               <ContextMenu.Item danger onSelect={() => { if (tab.id) onClose(tab.id); }}>
-                <X size={14} className="mr-2" /> Close {selectionCount} Tabs
+                <X size={14} className="mr-2" /> {t.tabs.contextMenu.closeCountTabs(selectionCount ?? 0)}
               </ContextMenu.Item>
             </>
           ) : (
@@ -304,17 +306,17 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
             <>
           {onPin && tab.url && !tab.pinned && (
             <ContextMenu.Item onSelect={() => onPin(tab.url!, tab.title || tab.url!, tab.favIconUrl)}>
-              <Pin size={14} className="mr-2" /> Pin to Sidebar
+              <Pin size={14} className="mr-2" /> {t.tabs.contextMenu.pinToSidebar}
             </ContextMenu.Item>
           )}
           {onDuplicate && tab.url && (
             <ContextMenu.Item onSelect={() => onDuplicate(tab.id!)}>
-              <Copy size={14} className="mr-2" /> Duplicate
+              <Copy size={14} className="mr-2" /> {t.common.duplicate}
             </ContextMenu.Item>
           )}
           {tab.url && (
             <ContextMenu.Item onSelect={() => onCopyUrl?.(tab.url!)}>
-              <Link size={14} className="mr-2" /> Copy URL
+              <Link size={14} className="mr-2" /> {t.common.copyUrl}
             </ContextMenu.Item>
           )}
           {/* Separator after Pin/Duplicate section - only if items exist above AND below */}
@@ -325,22 +327,22 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
           )}
           {onAddToBookmark && tab.url && (
             <ContextMenu.Item onSelect={() => onAddToBookmark(tab)}>
-              <Bookmark size={14} className="mr-2" /> Add to Bookmark...
+              <Bookmark size={14} className="mr-2" /> {t.tabs.contextMenu.addToBookmark}
             </ContextMenu.Item>
           )}
           {onOpenAddToGroupDialog && (
             <ContextMenu.Item onSelect={() => onOpenAddToGroupDialog(tab.id!, tab.groupId)}>
-              <FolderPlus size={14} className="mr-2" /> Add to Group
+              <FolderPlus size={14} className="mr-2" /> {t.tabs.contextMenu.addToGroup}
             </ContextMenu.Item>
           )}
           {onOpenMoveToSpaceDialog && (
             <ContextMenu.Item onSelect={() => onOpenMoveToSpaceDialog(tab.id!)}>
-              <SquareStack size={14} className="mr-2" /> Move Tab to Space...
+              <SquareStack size={14} className="mr-2" /> {t.tabs.contextMenu.moveTabToSpace}
             </ContextMenu.Item>
           )}
           {onMoveToNewWindow && (
             <ContextMenu.Item onSelect={() => onMoveToNewWindow(tab.id!)}>
-              <ExternalLink size={14} className="mr-2" /> Move to New Window
+              <ExternalLink size={14} className="mr-2" /> {t.tabs.contextMenu.moveToNewWindow}
             </ContextMenu.Item>
           )}
           {/* Separator after organize section - only if items exist above AND below */}
@@ -350,17 +352,17 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
           )}
           {onCloseTabsBefore && (
             <ContextMenu.Item onSelect={() => onCloseTabsBefore(tab.id!)}>
-              <span className="w-[14px] mr-2" /> Close Tabs Before
+              <span className="w-[14px] mr-2" /> {t.tabs.contextMenu.closeTabsBefore}
             </ContextMenu.Item>
           )}
           {onCloseTabsAfter && (
             <ContextMenu.Item onSelect={() => onCloseTabsAfter(tab.id!)}>
-              <span className="w-[14px] mr-2" /> Close Tabs After
+              <span className="w-[14px] mr-2" /> {t.tabs.contextMenu.closeTabsAfter}
             </ContextMenu.Item>
           )}
           {onCloseOthers && (
             <ContextMenu.Item onSelect={() => onCloseOthers(tab.id!)}>
-              <span className="w-[14px] mr-2" /> Close Other Tabs
+              <span className="w-[14px] mr-2" /> {t.tabs.contextMenu.closeOtherTabs}
             </ContextMenu.Item>
           )}
           {/* Separator before Close - only if items exist above */}
@@ -370,7 +372,7 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
             <ContextMenu.Separator />
           )}
           <ContextMenu.Item danger onSelect={() => { if (tab.id) onClose(tab.id); }}>
-            <X size={14} className="mr-2" /> Close
+            <X size={14} className="mr-2" /> {t.common.close}
           </ContextMenu.Item>
             </>
           )}
@@ -465,6 +467,7 @@ interface DroppableNewTabRowProps
 const DroppableNewTabRow = forwardRef<HTMLDivElement, DroppableNewTabRowProps>(
   ({ onClick, showDropIndicator, showDropInto }, forwardedRef) =>
   {
+    const t = useT();
     const { setNodeRef: setDropRef } = useDroppable({
       id: 'end-of-list',
       data: {
@@ -497,7 +500,7 @@ const DroppableNewTabRow = forwardRef<HTMLDivElement, DroppableNewTabRowProps>(
         ref={setRefs}
         depth={0}
         icon={<Plus size={14} />}
-        title="New Tab"
+        title={t.tabs.newTab}
         hasChildren={false}
         onClick={onClick}
         className={clsx(
@@ -580,6 +583,7 @@ const TabGroupHeader = forwardRef<HTMLDivElement, TabGroupHeaderProps>(({
   listeners,
 }, ref) =>
 {
+  const t = useT();
   const dndId = `group-${group.id}`;
   const colorStyle = GROUP_COLORS[group.color] || GROUP_COLORS.grey;
 
@@ -593,7 +597,7 @@ const TabGroupHeader = forwardRef<HTMLDivElement, TabGroupHeaderProps>(({
   const titleComponent = (
     <span className={clsx("px-2 py-0.5 rounded-full font-medium text-white dark:text-black flex items-center gap-1 w-fit", colorStyle.badge)}>
       {iconElement}
-      {group.title || 'Unnamed Group'}
+      {group.title || t.tabs.unnamedGroup}
     </span>
   );
 
@@ -649,7 +653,7 @@ const TabGroupHeader = forwardRef<HTMLDivElement, TabGroupHeaderProps>(({
             <>
               {onSaveGroupsToBookmarks && (
                 <ContextMenu.Item onSelect={onSaveGroupsToBookmarks}>
-                  <FolderPlus size={14} className="mr-2" /> Save to Bookmarks
+                  <FolderPlus size={14} className="mr-2" /> {t.tabs.contextMenu.saveToBookmarks}
                 </ContextMenu.Item>
               )}
               {onSaveGroupsToBookmarks && (onMoveSelectedToSpace || onMoveSelectedToNewWindow) && (
@@ -657,46 +661,46 @@ const TabGroupHeader = forwardRef<HTMLDivElement, TabGroupHeaderProps>(({
               )}
               {onMoveSelectedToSpace && (
                 <ContextMenu.Item onSelect={onMoveSelectedToSpace}>
-                  <SquareStack size={14} className="mr-2" /> Move Tabs to Space...
+                  <SquareStack size={14} className="mr-2" /> {t.tabs.contextMenu.moveTabsToSpace}
                 </ContextMenu.Item>
               )}
               {onMoveSelectedToNewWindow && (
                 <ContextMenu.Item onSelect={onMoveSelectedToNewWindow}>
-                  <ExternalLink size={14} className="mr-2" /> Move to New Window
+                  <ExternalLink size={14} className="mr-2" /> {t.tabs.contextMenu.moveToNewWindow}
                 </ContextMenu.Item>
               )}
               <ContextMenu.Separator />
               <ContextMenu.Item danger onSelect={onCloseSelected}>
-                <X size={14} className="mr-2" /> Close
+                <X size={14} className="mr-2" /> {t.common.close}
               </ContextMenu.Item>
             </>
           ) : (
             // Single-group menu
             <>
           <ContextMenu.Item onSelect={onNewTab}>
-            <Plus size={14} className="mr-2" /> New Tab
+            <Plus size={14} className="mr-2" /> {t.tabs.newTab}
           </ContextMenu.Item>
           <ContextMenu.Separator />
           <ContextMenu.Item onSelect={() => onSortGroup('asc')}>
-            <ArrowDownAZ size={14} className="mr-2" /> Sort by Domain (A-Z)
+            <ArrowDownAZ size={14} className="mr-2" /> {t.tabs.contextMenu.sortByDomainAsc}
           </ContextMenu.Item>
           <ContextMenu.Item onSelect={() => onSortGroup('desc')}>
-            <ArrowDownZA size={14} className="mr-2" /> Sort by Domain (Z-A)
+            <ArrowDownZA size={14} className="mr-2" /> {t.tabs.contextMenu.sortByDomainDesc}
           </ContextMenu.Item>
           <ContextMenu.Separator />
           <ContextMenu.Item onSelect={onExportToBookmarks}>
-            <FolderPlus size={14} className="mr-2" /> Save to Bookmarks
+            <FolderPlus size={14} className="mr-2" /> {t.tabs.contextMenu.saveToBookmarks}
           </ContextMenu.Item>
           <ContextMenu.Separator />
           <ContextMenu.Item onSelect={onRename}>
-            <Edit size={14} className="mr-2" /> Rename Group
+            <Edit size={14} className="mr-2" /> {t.tabs.contextMenu.renameGroup}
           </ContextMenu.Item>
           <ContextMenu.Item onSelect={onChangeColor}>
-            <Palette size={14} className="mr-2" /> Change Color
+            <Palette size={14} className="mr-2" /> {t.tabs.contextMenu.changeColor}
           </ContextMenu.Item>
           <ContextMenu.Separator />
           <ContextMenu.Item danger onSelect={onCloseGroup}>
-            <X size={14} className="mr-2" /> Close Tabs in Group
+            <X size={14} className="mr-2" /> {t.tabs.contextMenu.closeTabsInGroup}
           </ContextMenu.Item>
             </>
           )}
@@ -792,6 +796,7 @@ interface TabListProps {
 
 export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFirst', onTabGroupDisplayOrderChange, onExternalDropTargetChange: _onExternalDropTargetChange, resolveBookmarkDropTarget: _resolveBookmarkDropTarget, arcStyleEnabled = false, filterText = '', activeSpace: activeSpaceProp, useSpaces = true, onSpaceDropTargetChange: _onSpaceDropTargetChange, onPerformAction }: TabListProps) =>
 {
+  const t = useT();
   const { spaces, activeSpace: activeSpaceFromContext, windowId } = useSpacesContext();
   const { tabs, closeTabs, activateTab, moveTab, groupTab, ungroupTab, createGroupWithTab, createTabInGroup, createTab, duplicateTab, sortTabs, sortGroupTabs, error } = useTabs(windowId ?? undefined);
   const { tabGroups, updateGroup, moveGroup } = useTabGroups();
@@ -1130,7 +1135,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
 
     if (bookmarkableTabs.length === 0)
     {
-      showToast('No bookmarkable tabs to export');
+      showToast(t.tabs.toast.noBookmarkableTabs);
       return;
     }
 
@@ -1140,7 +1145,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       group,
       groupTabs: bookmarkableTabs
     });
-  }, [showToast]);
+  }, [showToast, t]);
 
   // Handle folder selection from folder picker
   const handleFolderSelected = useCallback(async (parentFolderId: string) =>
@@ -1174,10 +1179,10 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       {
         await createBookmarksInFolderBatch(newFolder.id, groupTabs);
         const segments = await getBookmarkSegments(newFolder.id);
-        showToast(`Bookmark folder "${segments.join('/')}" is created`);
+        showToast(t.tabs.toast.folderCreated(segments.join('/')));
       });
     }
-  }, [folderPickerDialog, findFolderInParent, createFolder, createBookmarksInFolderBatch, getBookmarkSegments, showToast]);
+  }, [folderPickerDialog, findFolderInParent, createFolder, createBookmarksInFolderBatch, getBookmarkSegments, showToast, t]);
 
   const closeFolderPickerDialog = useCallback(() =>
   {
@@ -1198,7 +1203,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       // Clear existing bookmarks and add new ones
       await clearFolder(existingFolder.id);
       await createBookmarksInFolderBatch(existingFolder.id, tabsToExport);
-      showToast(`Bookmark folder "${folderPath}" is updated`);
+      showToast(t.tabs.toast.folderUpdated(folderPath));
     }
     else
     {
@@ -1215,14 +1220,14 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       if (newTabs.length > 0)
       {
         await createBookmarksInFolderBatch(existingFolder.id, newTabs);
-        showToast(`Added ${newTabs.length} new bookmarks to "${folderPath}"`);
+        showToast(t.tabs.toast.addedNewBookmarks(newTabs.length, folderPath));
       }
       else
       {
-        showToast('All tabs already exist in folder');
+        showToast(t.tabs.toast.allTabsAlreadyInFolder);
       }
     }
-  }, [exportConflictDialog, clearFolder, createBookmarksInFolderBatch, getChildren, getBookmarkSegments, showToast]);
+  }, [exportConflictDialog, clearFolder, createBookmarksInFolderBatch, getChildren, getBookmarkSegments, showToast, t]);
 
   const closeExportConflictDialog = useCallback(() =>
   {
@@ -1370,13 +1375,13 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
         await chrome.tabs.group({ tabIds: [newTab.id], groupId });
       }
 
-      showToast('Tab created from dropped link');
+      showToast(t.tabs.toast.tabCreatedFromDrop);
     }
     catch (err)
     {
       console.error('[TabList] Failed to create tab from dropped URL:', err);
     }
-  }, [visibleTabs, showToast]);
+  }, [visibleTabs, showToast, t]);
 
   // Set up external URL drop handling (web page links)
   useExternalUrlDropForTabs({
@@ -2327,8 +2332,8 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
     saveLastSelectedBookmarkFolder(folderId);
     clearSelection();
     setAddToBookmarkMultiDialog({ isOpen: false });
-    showToast('Added to bookmarks');
-  }, [getTabSelectionInfo, visibleTabs, createBookmark, createFolder, saveLastSelectedBookmarkFolder, clearSelection, showToast]);
+    showToast(t.tabs.toast.addedToBookmarks);
+  }, [getTabSelectionInfo, visibleTabs, createBookmark, createFolder, saveLastSelectedBookmarkFolder, clearSelection, showToast, t]);
 
   // Open move to space dialog for multi-selection
   const openMoveSelectedToSpaceDialog = useCallback(() =>
@@ -2406,8 +2411,8 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
     saveLastSelectedBookmarkFolder(folderId);
     clearSelection();
     setSaveGroupsToBookmarksDialog({ isOpen: false });
-    showToast('Groups saved to bookmarks');
-  }, [getTabSelectionInfo, visibleTabs, saveLastSelectedBookmarkFolder, clearSelection, showToast]);
+    showToast(t.tabs.toast.groupsSavedToBookmarks);
+  }, [getTabSelectionInfo, visibleTabs, saveLastSelectedBookmarkFolder, clearSelection, showToast, t]);
 
   // Copy single URL to clipboard
   const handleCopyUrl = useCallback(async (url: string) =>
@@ -2457,29 +2462,29 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       <ContextMenu.Item onSelect={() => {
         sortTabs('asc', visibleTabGroups, tabGroupDisplayOrder);
       }}>
-        <ArrowDownAZ size={14} className="mr-2" /> Sort by Domain (A-Z)
+        <ArrowDownAZ size={14} className="mr-2" /> {t.tabs.contextMenu.sortByDomainAsc}
       </ContextMenu.Item>
       <ContextMenu.Item onSelect={() => {
         sortTabs('desc', visibleTabGroups, tabGroupDisplayOrder);
       }}>
-        <ArrowDownZA size={14} className="mr-2" /> Sort by Domain (Z-A)
+        <ArrowDownZA size={14} className="mr-2" /> {t.tabs.contextMenu.sortByDomainDesc}
       </ContextMenu.Item>
       <ContextMenu.Separator />
       <ContextMenu.Item onSelect={() => onTabGroupDisplayOrderChange?.('groupsFirst')}>
         {tabGroupDisplayOrder === 'groupsFirst' ? <Check size={14} className="mr-2" /> : <span className="w-[14px] mr-2" />}
-        Groups before ungrouped tabs
+        {t.tabs.contextMenu.groupsBeforeUngrouped}
       </ContextMenu.Item>
       <ContextMenu.Item onSelect={() => onTabGroupDisplayOrderChange?.('groupsLast')}>
         {tabGroupDisplayOrder === 'groupsLast' ? <Check size={14} className="mr-2" /> : <span className="w-[14px] mr-2" />}
-        Groups after ungrouped tabs
+        {t.tabs.contextMenu.groupsAfterUngrouped}
       </ContextMenu.Item>
       <ContextMenu.Item onSelect={() => onTabGroupDisplayOrderChange?.('chromeOrder')}>
         {tabGroupDisplayOrder === 'chromeOrder' ? <Check size={14} className="mr-2" /> : <span className="w-[14px] mr-2" />}
-        Chrome's native order
+        {t.tabs.contextMenu.chromeNativeOrder}
       </ContextMenu.Item>
       <ContextMenu.Separator />
       <ContextMenu.Item onSelect={handleCloseAllTabs}>
-        <X size={14} className="mr-2" /> Close Tabs
+        <X size={14} className="mr-2" /> {t.tabs.contextMenu.closeTabs}
       </ContextMenu.Item>
     </>
   );
@@ -2488,9 +2493,9 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
     <>
       {/* Tabs Label Row */}
       <SectionHeader
-        label="Tabs"
+        label={t.tabs.sectionLabel}
         menuContent={tabsMenuContent}
-        menuTitle="Tab options"
+        menuTitle={t.tabs.sectionMenuTitle}
       />
 
       {/* Tabs list */}
@@ -2732,7 +2737,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       <SpaceNavigatorDialog
         isOpen={moveToSpaceDialog.isOpen}
         onClose={closeMoveToSpaceDialog}
-        title="Move Tab to Space"
+        title={t.tabs.dialog.moveTabToSpace}
         hideAllSpace
         excludeSpaceId={moveToSpaceDialog.currentSpaceId}
         onSelectSpace={handleMoveToSpace}
@@ -2755,14 +2760,14 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
 
       <FolderPickerDialog
         isOpen={folderPickerDialog.isOpen}
-        title="Select Destination Folder"
+        title={t.tabs.dialog.selectDestinationFolder}
         onSelect={handleFolderSelected}
         onClose={closeFolderPickerDialog}
       />
 
       <FolderPickerDialog
         isOpen={addToBookmarkDialog.isOpen}
-        title="Add Tab to Bookmark Folder"
+        title={t.tabs.dialog.addTabToBookmarkFolder}
         onSelect={handleAddToBookmarkFolderSelect}
         onClose={closeAddToBookmarkDialog}
         defaultFolderId={lastSelectedBookmarkFolderDefaultId}
@@ -2779,7 +2784,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
         isOpen={confirmCloseAllDialog.isOpen}
         itemCount={confirmCloseAllDialog.tabIds.length}
         itemType="tabs"
-        details="This will close the window."
+        details={t.tabs.dialog.closeAllWillCloseWindow}
         onConfirm={handleConfirmCloseAll}
         onClose={() => setConfirmCloseAllDialog({ isOpen: false, tabIds: [] })}
       />
@@ -2787,7 +2792,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       {/* Multi-selection dialogs */}
       <FolderPickerDialog
         isOpen={addToBookmarkMultiDialog.isOpen}
-        title="Add to Bookmark Folder"
+        title={t.tabs.dialog.addToBookmarkFolder}
         onSelect={handleAddSelectedToBookmarkFolder}
         onClose={() => setAddToBookmarkMultiDialog({ isOpen: false })}
         defaultFolderId={lastSelectedBookmarkFolderDefaultId}
@@ -2796,7 +2801,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
       <SpaceNavigatorDialog
         isOpen={moveToSpaceMultiDialog.isOpen}
         onClose={() => setMoveToSpaceMultiDialog({ isOpen: false })}
-        title="Move Tabs to Space"
+        title={t.tabs.dialog.moveTabsToSpace}
         hideAllSpace
         excludeSpaceId={activeSpace?.id}
         onSelectSpace={handleMoveSelectedToSpace}
@@ -2805,7 +2810,7 @@ export const TabList = ({ onPin, onPinMultiple, tabGroupDisplayOrder = 'groupsFi
 
       <FolderPickerDialog
         isOpen={saveGroupsToBookmarksDialog.isOpen}
-        title="Save Groups to Bookmark Folder"
+        title={t.tabs.dialog.saveGroupsToBookmarkFolder}
         onSelect={handleSaveGroupsToBookmarksFolder}
         onClose={() => setSaveGroupsToBookmarksDialog({ isOpen: false })}
         defaultFolderId={lastSelectedBookmarkFolderDefaultId}

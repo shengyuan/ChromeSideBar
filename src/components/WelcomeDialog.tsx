@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from './Dialog';
 import { Pin, BookOpen, LayoutGrid, Sparkles } from 'lucide-react';
+import { useT, type Messages } from '../i18n';
 
 interface WelcomeDialogProps
 {
@@ -17,46 +18,47 @@ interface PageContent
   isOverview?: boolean;
 }
 
-const featurePreview = [
+// Built per render (not module-level) so the text follows the current UI language
+const getFeaturePreview = (t: Messages) => [
   {
-    title: 'Pinned Sites',
-    description: 'Quick-access icon bar',
+    title: t.app.welcome.pinnedSitesTitle,
+    description: t.app.welcome.pinnedSitesSummary,
     icon: <Pin size={18} />,
   },
   {
-    title: 'Live Bookmarks',
-    description: 'Bookmarks that act as tabs',
+    title: t.app.welcome.liveBookmarksTitle,
+    description: t.app.welcome.liveBookmarksSummary,
     icon: <BookOpen size={18} />,
   },
   {
-    title: 'Spaces',
-    description: 'Organize by context',
+    title: t.app.welcome.spacesTitle,
+    description: t.app.welcome.spacesSummary,
     icon: <LayoutGrid size={18} />,
   },
 ];
 
-const pages: PageContent[] = [
+const getPages = (t: Messages): PageContent[] => [
   {
-    title: 'Welcome',
-    description: "Arc browser's sidebar experience for Chrome",
+    title: t.app.welcome.welcomeTitle,
+    description: t.app.welcome.welcomeDescription,
     icon: <Sparkles size={20} />,
     isOverview: true,
   },
   {
-    title: 'Pinned Sites',
-    description: 'Quick-access icons at the top. Pin your favorite sites for one-click access.',
+    title: t.app.welcome.pinnedSitesTitle,
+    description: t.app.welcome.pinnedSitesDescription,
     image: '/welcome/pinned-sites.png',
     icon: <Pin size={20} />,
   },
   {
-    title: 'Live Bookmarks',
-    description: 'Bookmarks act as persistent tabs. Click to open, click again to switch. Closing the tab keeps the bookmark.',
+    title: t.app.welcome.liveBookmarksTitle,
+    description: t.app.welcome.liveBookmarksDescription,
     image: '/welcome/live-bookmarks.png',
     icon: <BookOpen size={20} />,
   },
   {
-    title: 'Spaces',
-    description: 'Focus on what matters. Each space shows only its bookmarks and tabs, reducing clutter.',
+    title: t.app.welcome.spacesTitle,
+    description: t.app.welcome.spacesDescription,
     image: '/welcome/spaces.png',
     icon: <LayoutGrid size={20} />,
   },
@@ -64,6 +66,9 @@ const pages: PageContent[] = [
 
 export function WelcomeDialog({ isOpen, onClose }: WelcomeDialogProps)
 {
+  const t = useT();
+  const featurePreview = getFeaturePreview(t);
+  const pages = getPages(t);
   const [currentPage, setCurrentPage] = useState(0);
 
   // Reset to first page when dialog opens
@@ -109,7 +114,7 @@ export function WelcomeDialog({ isOpen, onClose }: WelcomeDialogProps)
     <Dialog
       isOpen={isOpen}
       onClose={handleClose}
-      title="Welcome to SideBar For Arc Users"
+      title={t.app.welcome.dialogTitle}
       maxWidth="max-w-sm"
     >
       <div className="p-4">
@@ -119,7 +124,7 @@ export function WelcomeDialog({ isOpen, onClose }: WelcomeDialogProps)
             <div className="flex flex-col items-center mb-4">
               <img
                 src="/icon.png"
-                alt="SideBar icon"
+                alt={t.app.welcome.iconAlt}
                 className="w-16 h-16 mb-3"
               />
               <p className="text-gray-600 dark:text-gray-400 text-center">
@@ -188,7 +193,7 @@ export function WelcomeDialog({ isOpen, onClose }: WelcomeDialogProps)
                   ? 'bg-blue-500'
                   : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
               }`}
-              aria-label={`Go to page ${index + 1}`}
+              aria-label={t.app.welcome.goToPage(index + 1)}
             />
           ))}
         </div>
@@ -200,7 +205,7 @@ export function WelcomeDialog({ isOpen, onClose }: WelcomeDialogProps)
               onClick={handlePrev}
               className="px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
             >
-              ← Prev
+              {t.app.welcome.prev}
             </button>
           ) : (
             <div />
@@ -209,7 +214,7 @@ export function WelcomeDialog({ isOpen, onClose }: WelcomeDialogProps)
             onClick={handleNext}
             className="px-4 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            {isLastPage ? 'Get Started' : 'Next →'}
+            {isLastPage ? t.app.welcome.getStarted : t.app.welcome.next}
           </button>
         </div>
       </div>

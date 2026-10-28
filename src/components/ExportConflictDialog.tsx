@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 
 export type ExportConflictMode = 'overwrite' | 'merge';
 
@@ -18,6 +19,7 @@ export const ExportConflictDialog = ({
   onClose
 }: ExportConflictDialogProps) =>
 {
+  const t = useT();
   const [selectedMode, setSelectedMode] = useState<ExportConflictMode>('overwrite');
 
   // Reset state when dialog opens
@@ -36,10 +38,10 @@ export const ExportConflictDialog = ({
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Folder Already Exists">
+    <Dialog isOpen={isOpen} onClose={onClose} title={t.importExport.exportConflict.title}>
       <div className="p-3 space-y-3">
         <p className="text-gray-600 dark:text-gray-400">
-          A bookmark folder named "{folderName}" already exists. What would you like to do?
+          {t.importExport.exportConflict.message(folderName)}
         </p>
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -49,7 +51,7 @@ export const ExportConflictDialog = ({
               checked={selectedMode === 'overwrite'}
               onChange={() => setSelectedMode('overwrite')}
             />
-            Overwrite (replace all bookmarks)
+            {t.importExport.exportConflict.overwrite}
           </label>
           <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 cursor-pointer">
             <input
@@ -58,7 +60,7 @@ export const ExportConflictDialog = ({
               checked={selectedMode === 'merge'}
               onChange={() => setSelectedMode('merge')}
             />
-            Merge (add missing bookmarks only)
+            {t.importExport.exportConflict.merge}
           </label>
         </div>
         <div className="flex justify-end gap-2 pt-2">
@@ -66,13 +68,13 @@ export const ExportConflictDialog = ({
             onClick={onClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleConfirm}
             className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
           >
-            OK
+            {t.common.ok}
           </button>
         </div>
       </div>

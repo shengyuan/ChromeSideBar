@@ -13,6 +13,7 @@ import {
 } from '../utils/arcImport';
 import { PinnedSite } from '../hooks/usePinnedSites';
 import { Space } from '../contexts/SpacesContext';
+import { useT } from '../i18n';
 
 interface ArcImportDialogProps
 {
@@ -49,6 +50,7 @@ export function ArcImportDialog({
   existingSpaces,
 }: ArcImportDialogProps)
 {
+  const t = useT();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMountedRef = useRef(true);
   const [dialogState, setDialogState] = useState<DialogState>('intro');
@@ -114,7 +116,7 @@ export function ArcImportDialog({
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE)
     {
-      setError('File too large (max 10MB)');
+      setError(t.importExport.arcImport.fileTooLarge);
       setDialogState('preview');
       return;
     }
@@ -130,7 +132,7 @@ export function ArcImportDialog({
 
         if (!isArcSidebar(json))
         {
-          setError('Not a valid Arc StorableSidebar.json file');
+          setError(t.importExport.arcImport.invalidFile);
           setDialogState('preview');
           return;
         }
@@ -140,7 +142,7 @@ export function ArcImportDialog({
 
         if (summary.topAppsCount === 0 && summary.spacesCount === 0)
         {
-          setError('No importable data found in file');
+          setError(t.importExport.arcImport.noData);
           setDialogState('preview');
           return;
         }
@@ -152,7 +154,7 @@ export function ArcImportDialog({
       }
       catch (err)
       {
-        setError('Failed to parse Arc sidebar file');
+        setError(t.importExport.arcImport.parseFailed);
         setErrorDetails(err instanceof Error ? err.message : String(err));
         setDialogState('preview');
       }
@@ -193,7 +195,7 @@ export function ArcImportDialog({
       if (isMountedRef.current)
       {
         console.error('Arc import failed:', err);
-        setError('Import failed. Please try again.');
+        setError(t.importExport.importFailed);
         setErrorDetails(err instanceof Error ? err.message : String(err));
         setDialogState('preview');
       }
@@ -213,13 +215,13 @@ export function ArcImportDialog({
             onClick={handleClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleSelectFile}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Select File...
+            {t.importExport.arcImport.selectFile}
           </button>
         </div>
       );
@@ -232,7 +234,7 @@ export function ArcImportDialog({
             onClick={handleClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
-            Close
+            {t.common.close}
           </button>
         </div>
       );
@@ -245,7 +247,7 @@ export function ArcImportDialog({
             onClick={handleClose}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Done
+            {t.common.done}
           </button>
         </div>
       );
@@ -259,14 +261,14 @@ export function ArcImportDialog({
             disabled={dialogState === 'importing'}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-50"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleConfirmImport}
             disabled={dialogState === 'importing' || nothingSelected}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
           >
-            {dialogState === 'importing' ? 'Importing...' : 'Import'}
+            {dialogState === 'importing' ? t.importExport.importing : t.common.import}
           </button>
         </div>
       );
@@ -301,7 +303,7 @@ export function ArcImportDialog({
       <Dialog
         isOpen={isOpen && dialogState !== 'selecting'}
         onClose={handleClose}
-        title={dialogState === 'success' ? 'Import Complete' : 'Import from Arc Browser'}
+        title={dialogState === 'success' ? t.importExport.importComplete : t.importExport.arcImport.title}
         maxWidth="max-w-xs"
         zIndex={60}
         footer={footerContent}
@@ -311,10 +313,10 @@ export function ArcImportDialog({
           {dialogState === 'intro' && (
             <>
               <p className="text-gray-700 dark:text-gray-300">
-                Import your Arc Browser sidebar into Chrome, including top apps, spaces, and bookmarks.
+                {t.importExport.arcImport.intro}
               </p>
               <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                <p>Select Arc's <span className="font-mono">StorableSidebar.json</span> file from:</p>
+                <p>{t.importExport.arcImport.selectFileFrom(<span className="font-mono">StorableSidebar.json</span>)}</p>
                 <div className="flex items-center gap-1">
                   <code className="bg-gray-100 dark:bg-gray-900 px-1.5 py-0.5 rounded text-[11px] break-all">
                     {ARC_JSON_PATH}
@@ -322,7 +324,7 @@ export function ArcImportDialog({
                   <button
                     onClick={handleCopyPath}
                     className="p-0.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded flex-shrink-0"
-                    title="Copy path"
+                    title={t.importExport.arcImport.copyPath}
                   >
                     {copied
                       ? <Check size={12} className="text-green-500" />
@@ -331,7 +333,7 @@ export function ArcImportDialog({
                   </button>
                 </div>
                 <p className="text-gray-400 dark:text-gray-500">
-                  Tip: use Cmd+Shift+G in the file picker to go to a path
+                  {t.importExport.arcImport.pathTip}
                 </p>
               </div>
             </>
@@ -344,7 +346,7 @@ export function ArcImportDialog({
               {errorDetails && (
                 <details className="mt-2">
                   <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
-                    Show details
+                    {t.importExport.showDetails}
                   </summary>
                   <pre className="mt-1 text-xs text-gray-500 dark:text-gray-400 whitespace-pre-wrap break-all bg-gray-100 dark:bg-gray-900 p-2 rounded">
                     {errorDetails}
@@ -359,25 +361,25 @@ export function ArcImportDialog({
             <>
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                 <CheckCircle size={20} />
-                <span>Successfully imported:</span>
+                <span>{t.importExport.successfullyImported}</span>
               </div>
               <ul className="text-gray-600 dark:text-gray-400 ml-7 space-y-1">
                 {importResult.pinnedSitesCount > 0 && (
-                  <li>{importResult.pinnedSitesCount} pinned sites</li>
+                  <li>{t.importExport.pinnedSitesCount(importResult.pinnedSitesCount)}</li>
                 )}
                 {importResult.spacesCount > 0 && (
                   <li>
-                    {importResult.spacesCount} spaces
+                    {t.importExport.spacesCount(importResult.spacesCount)}
                     {importResult.spacesMerged > 0 && (
-                      <span className="text-gray-500"> ({importResult.spacesMerged} merged with existing)</span>
+                      <span className="text-gray-500">{t.importExport.arcImport.mergedWithExisting(importResult.spacesMerged)}</span>
                     )}
                   </li>
                 )}
                 {importResult.bookmarksCount > 0 && (
-                  <li>{importResult.bookmarksCount} bookmarks</li>
+                  <li>{t.importExport.bookmarksCount(importResult.bookmarksCount)}</li>
                 )}
                 {importResult.tabsOpened > 0 && (
-                  <li>{importResult.tabsOpened} tabs opened</li>
+                  <li>{t.importExport.arcImport.tabsOpened(importResult.tabsOpened)}</li>
                 )}
               </ul>
               {importResult.notes.length > 0 && (
@@ -395,15 +397,15 @@ export function ArcImportDialog({
             <>
               {/* Found summary */}
               <div className="text-gray-600 dark:text-gray-400 space-y-0.5">
-                <p className="text-gray-700 dark:text-gray-300 font-medium">Found:</p>
-                <p className="ml-2">{preview.topAppsCount} Top Apps</p>
-                <p className="ml-2">{preview.spacesCount} Spaces</p>
-                <p className="ml-2">{preview.pinnedItemsCount} pinned tabs/folders</p>
+                <p className="text-gray-700 dark:text-gray-300 font-medium">{t.importExport.arcImport.found}</p>
+                <p className="ml-2">{t.importExport.arcImport.foundTopApps(preview.topAppsCount)}</p>
+                <p className="ml-2">{t.importExport.arcImport.foundSpaces(preview.spacesCount)}</p>
+                <p className="ml-2">{t.importExport.arcImport.foundPinnedItems(preview.pinnedItemsCount)}</p>
                 {preview.unpinnedTabsCount > 0 && (
-                  <p className="ml-2">{preview.unpinnedTabsCount} unpinned tabs</p>
+                  <p className="ml-2">{t.importExport.arcImport.foundUnpinnedTabs(preview.unpinnedTabsCount)}</p>
                 )}
                 {preview.skippedCount > 0 && (
-                  <p className="ml-2 text-gray-500">{preview.skippedCount} skipped (live folders)</p>
+                  <p className="ml-2 text-gray-500">{t.importExport.arcImport.foundSkipped(preview.skippedCount)}</p>
                 )}
               </div>
 
@@ -420,7 +422,7 @@ export function ArcImportDialog({
                         className="rounded border-gray-300 dark:border-gray-600"
                         disabled={dialogState === 'importing'}
                       />
-                      Top Apps as Pinned Sites
+                      {t.importExport.arcImport.topAppsAsPinnedSites}
                     </label>
                     {importTopApps && (
                       <div className="ml-5 mt-1 space-y-1">
@@ -432,7 +434,7 @@ export function ArcImportDialog({
                             onChange={() => setTopAppsMode('append')}
                             disabled={dialogState === 'importing'}
                           />
-                          Append to existing
+                          {t.importExport.appendToExisting}
                         </label>
                         <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                           <input
@@ -442,7 +444,7 @@ export function ArcImportDialog({
                             onChange={() => setTopAppsMode('replace')}
                             disabled={dialogState === 'importing'}
                           />
-                          Replace existing
+                          {t.importExport.replaceExisting}
                         </label>
                       </div>
                     )}
@@ -460,7 +462,7 @@ export function ArcImportDialog({
                         className="rounded border-gray-300 dark:border-gray-600"
                         disabled={dialogState === 'importing'}
                       />
-                      Spaces + Bookmarks
+                      {t.importExport.arcImport.spacesAndBookmarks}
                     </label>
                     {importSpaces && (
                       <div className="ml-5 mt-1 space-y-1">
@@ -472,7 +474,7 @@ export function ArcImportDialog({
                             onChange={() => setSpacesMode('append')}
                             disabled={dialogState === 'importing'}
                           />
-                          Append to existing
+                          {t.importExport.appendToExisting}
                         </label>
                         <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                           <input
@@ -482,7 +484,7 @@ export function ArcImportDialog({
                             onChange={() => setSpacesMode('replace')}
                             disabled={dialogState === 'importing'}
                           />
-                          Replace all spaces
+                          {t.importExport.replaceAllSpaces}
                         </label>
                       </div>
                     )}
@@ -500,11 +502,11 @@ export function ArcImportDialog({
                         className="rounded border-gray-300 dark:border-gray-600"
                         disabled={dialogState === 'importing'}
                       />
-                      Open unpinned tabs in Chrome
+                      {t.importExport.arcImport.openUnpinnedTabs}
                     </label>
                     {importUnpinnedTabs && (
                       <p className="ml-5 text-xs text-gray-500 dark:text-gray-500">
-                        Creates tab groups named after each space
+                        {t.importExport.arcImport.openUnpinnedTabsHint}
                       </p>
                     )}
                   </div>

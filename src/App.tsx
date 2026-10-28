@@ -4,6 +4,7 @@ import { TabList, ExternalDropTarget, ResolveBookmarkDropTarget } from './compon
 import { PinnedBar } from './components/PinnedBar';
 import { Toolbar } from './components/Toolbar';
 import { SpaceBar } from './components/SpaceBar';
+import { getSpaceDisplayName } from './components/SpaceList';
 import { SettingsDialog, SettingsValues, BookmarkOpenMode, TabGroupDisplayOrder } from './components/SettingsDialog';
 import { AboutDialog } from './components/AboutDialog';
 import { ExportDialog } from './components/ExportDialog';
@@ -42,6 +43,7 @@ import { lastAudibleTrackerProxy } from './managers/proxies/lastAudibleTrackerPr
 import { useFollowActiveTab } from './hooks/useFollowActiveTab';
 import { FollowActiveTabMode, FOLLOW_ACTIVE_TAB_KEY, DEFAULT_FOLLOW_ACTIVE_TAB_MODE, parseFollowActiveTabMode } from './utils/followActiveTab';
 import * as DropdownMenu from './components/menu/DropdownMenu';
+import { i18n, useLanguageSetting, useT } from './i18n';
 
 // DEV-only, code-split so it never ends up in a production bundle - see
 // src/tests/inpanel/TestRunnerPanel.tsx. Lazy (not the dynamic-import-on-click
@@ -229,6 +231,7 @@ interface SpaceTitleProps
 
 const SpaceTitle: React.FC<SpaceTitleProps> = ({ onEditSpace, onDeleteSpace, onCloseAllTabs }) =>
 {
+  const t = useT();
   const { activeSpace } = useSpacesContext();
   const fontSize = useFontSize();
   const titleFontSize = fontSize - 1;
@@ -273,10 +276,10 @@ const SpaceTitle: React.FC<SpaceTitleProps> = ({ onEditSpace, onDeleteSpace, onC
 
   return (
     <SectionHeader
-      label={activeSpace.name}
+      label={getSpaceDisplayName(activeSpace, t)}
       icon={iconElement}
       menuContent={menuContent}
-      menuTitle="Space options"
+      menuTitle={t.app.spaceTitle.menuTitle}
       fontSize={titleFontSize}
       showMenuButton={true}
       textClassName={colorStyle.text}
@@ -295,6 +298,7 @@ interface SpaceTitleWrapperProps
 
 const SpaceTitleWrapper: React.FC<SpaceTitleWrapperProps> = ({ onEditSpace, onDeleteSpace, onPerformAction }) =>
 {
+  const t = useT();
   const { getTabIdsInSpace, windowId } = useSpacesContext();
   const { getItemKeyForTab, restoreItemAssociation } = useBookmarkTabsContext();
   const [confirmCloseAllDialog, setConfirmCloseAllDialog] = useState<{
@@ -351,7 +355,7 @@ const SpaceTitleWrapper: React.FC<SpaceTitleWrapperProps> = ({ onEditSpace, onDe
         isOpen={confirmCloseAllDialog.isOpen}
         itemCount={confirmCloseAllDialog.tabIds.length}
         itemType="tabs"
-        details="This will close the window."
+        details={t.app.spaceTitle.closeAllTabsDetails}
         onConfirm={handleConfirmCloseAll}
         onClose={() => setConfirmCloseAllDialog({ isOpen: false, tabIds: [] })}
       />
@@ -731,6 +735,8 @@ function App() {
   const { bookmarks } = useBookmarks();
   const { tabs, refreshTabs } = useTabs();
   const { hasUnreadNews, markNewsRead, openNews } = useNewsCheck();
+  const languageSetting = useLanguageSetting();
+  const t = useT();
 
   const handleApplySettings = (newSettings: SettingsValues) => {
     setFontSize(newSettings.fontSize);
@@ -745,6 +751,10 @@ function App() {
     setUseSpaceColor(newSettings.useSpaceColor);
     setSpaceColorAlpha(newSettings.spaceColorAlpha);
     setFollowActiveTab(newSettings.followActiveTab);
+    if (newSettings.language !== languageSetting)
+    {
+      i18n.setLanguageSetting(newSettings.language);
+    }
     setShowSettings(false);
   };
 
@@ -812,11 +822,11 @@ function App() {
     catch (err)
     {
       setLastAction(null);
-      const message = err instanceof Error ? err.message : 'Action failed';
+      const message = err instanceof Error ? err.message : t.app.toast.actionFailed;
       setToastMessage(message);
       setToastVisible(true);
     }
-  }, []);
+  }, [t]);
 
   // Undo the last action
   const handleUndo = useCallback(async () => {
@@ -825,17 +835,17 @@ function App() {
     {
       await lastAction.undo();
       setLastAction(null);
-      setToastMessage('Restored');
+      setToastMessage(t.app.toast.restored);
       setToastVisible(true);
     }
     catch (err)
     {
       setLastAction(null);
-      const message = err instanceof Error ? err.message : 'Undo failed';
+      const message = err instanceof Error ? err.message : t.app.toast.undoFailed;
       setToastMessage(message);
       setToastVisible(true);
     }
-  }, [lastAction]);
+  }, [lastAction, t]);
 
   // Space handlers
   const handleCreateSpace = useCallback(() => {
@@ -964,6 +974,7 @@ function App() {
           useSpaceColor,
           spaceColorAlpha,
           followActiveTab,
+          language: languageSetting,
         }}
         onApply={handleApplySettings}
       />
@@ -1070,33 +1081,33 @@ function App() {
               <>
                 <DropdownMenu.Item onSelect={handleUndo}>
                   <Undo2 size={14} className="mr-2" />
-                  Undo: {lastAction.description}
+                  {t.app.menu.undoAction(lastAction.description)}
                 </DropdownMenu.Item>
                 <DropdownMenu.Separator />
               </>
             )}
             <DropdownMenu.Item onSelect={() => setShowSettings(true)}>
               <Settings size={14} className="mr-2" />
-              Settings
+              {t.app.menu.settings}
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item onSelect={() => setShowExport(true)}>
               <Upload size={14} className="mr-2" />
-              Export...
+              {t.app.menu.exportEllipsis}
             </DropdownMenu.Item>
             <DropdownMenu.Item onSelect={() => {
               setShowImport(false);
               setTimeout(() => setShowImport(true), 0);
             }}>
               <Download size={14} className="mr-2" />
-              Import...
+              {t.app.menu.importEllipsis}
             </DropdownMenu.Item>
             <DropdownMenu.Item onSelect={() => {
               setShowArcImport(false);
               setTimeout(() => setShowArcImport(true), 0);
             }}>
               <Download size={14} className="mr-2" />
-              Import from Arc Browser...
+              {t.app.menu.importFromArc}
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item onSelect={() => {
@@ -1105,7 +1116,7 @@ function App() {
               setShowWhatsNew(true);
             }}>
               <Sparkles size={14} className="mr-2" />
-              What's New
+              {t.app.menu.whatsNew}
             </DropdownMenu.Item>
             <DropdownMenu.Item
               onSelect={openNews}
@@ -1123,7 +1134,7 @@ function App() {
               }}
             >
               <Newspaper size={14} className="mr-2" />
-              News
+              {t.app.menu.news}
               {/* Red dot for unread news */}
               {hasUnreadNews && (
                 <span className="ml-1.5 w-2 h-2 bg-red-500 rounded-full inline-block" />
@@ -1131,15 +1142,15 @@ function App() {
             </DropdownMenu.Item>
             <DropdownMenu.Item onSelect={() => window.open('mailto:chrome-dev@monemone.org?subject=Sidebar Feedback')}>
               <Mail size={14} className="mr-2" />
-              Email Us
+              {t.app.menu.emailUs}
             </DropdownMenu.Item>
             <DropdownMenu.Item onSelect={() => window.open('https://github.com/sponsors/monehsieh', '_blank')}>
               <Heart size={14} className="mr-2" />
-              Support Us
+              {t.app.menu.supportUs}
             </DropdownMenu.Item>
             <DropdownMenu.Item onSelect={() => setShowAbout(true)}>
               <Info size={14} className="mr-2" />
-              About
+              {t.app.menu.about}
             </DropdownMenu.Item>
             {import.meta.env.DEV && (
               <>

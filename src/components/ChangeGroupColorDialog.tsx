@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 import clsx from 'clsx';
 import { GROUP_COLOR_OPTIONS, COLOR_CIRCLE_SIZE } from '../utils/groupColors';
 
@@ -18,6 +19,7 @@ export const ChangeGroupColorDialog = ({
   onClose
 }: ChangeGroupColorDialogProps) =>
 {
+  const t = useT();
   const [selectedColor, setSelectedColor] = useState<chrome.tabGroups.ColorEnum>('blue');
 
   // Reset state when dialog opens
@@ -38,11 +40,11 @@ export const ChangeGroupColorDialog = ({
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Change Group Color">
+    <Dialog isOpen={isOpen} onClose={onClose} title={t.dialogs.changeGroupColor}>
       <div className="p-3 space-y-3">
         <div>
           <label className="block font-medium mb-2 text-gray-700 dark:text-gray-300">
-            Select Color
+            {t.dialogs.selectColor}
           </label>
           <div className="flex gap-1.5 flex-wrap">
             {GROUP_COLOR_OPTIONS.map((opt) => (
@@ -57,8 +59,8 @@ export const ChangeGroupColorDialog = ({
                     ? "border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800"
                     : "border-transparent"
                 )}
-                title={opt.value}
-                aria-label={`Select ${opt.value} color`}
+                title={t.dialogs.groupColorNames[opt.value]}
+                aria-label={t.dialogs.selectColorLabel(t.dialogs.groupColorNames[opt.value])}
               />
             ))}
           </div>
@@ -68,13 +70,13 @@ export const ChangeGroupColorDialog = ({
             onClick={onClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleSave}
             className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
           >
-            Save
+            {t.common.save}
           </button>
         </div>
       </div>

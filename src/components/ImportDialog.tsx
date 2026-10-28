@@ -14,6 +14,7 @@ import {
 } from '../utils/backupRestore';
 import { PinnedSite } from '../hooks/usePinnedSites';
 import { Space } from '../contexts/SpacesContext';
+import { useT, useLocale } from '../i18n';
 
 interface ImportDialogProps {
   isOpen: boolean;
@@ -45,6 +46,8 @@ export function ImportDialog({
   appendSpaces,
   existingSpaces,
 }: ImportDialogProps) {
+  const t = useT();
+  const locale = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMountedRef = useRef(true);
   const [dialogState, setDialogState] = useState<DialogState>('selecting');
@@ -90,7 +93,7 @@ export function ImportDialog({
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE)
     {
-      setError('Backup file too large (max 10MB)');
+      setError(t.importExport.backupImport.fileTooLarge);
       setDialogState('preview');
       return;
     }
@@ -116,7 +119,7 @@ export function ImportDialog({
             tabGroups: [],
           };
         } else {
-          setError('Invalid backup file format');
+          setError(t.importExport.backupImport.invalidFormat);
           setDialogState('preview');
           return;
         }
@@ -128,7 +131,7 @@ export function ImportDialog({
         const dataTypeCount = [hasPinnedSites, hasBookmarks, hasTabGroups, hasSpaces].filter(Boolean).length;
 
         if (dataTypeCount === 0) {
-          setError('Backup file contains no data');
+          setError(t.importExport.backupImport.noData);
           setDialogState('preview');
           return;
         }
@@ -153,7 +156,7 @@ export function ImportDialog({
         setSpacesMode('append');
         setDialogState('preview');
       } catch {
-        setError('Failed to parse backup file');
+        setError(t.importExport.backupImport.parseFailed);
         setDialogState('preview');
       }
     };
@@ -188,7 +191,7 @@ export function ImportDialog({
       setDialogState('success');
     } catch (err) {
       console.error('Import failed:', err);
-      setError('Import failed. Please try again.');
+      setError(t.importExport.importFailed);
       setErrorDetails(err instanceof Error ? err.message : String(err));
       setDialogState('preview');
     }
@@ -205,7 +208,7 @@ export function ImportDialog({
             onClick={handleClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
-            Close
+            {t.common.close}
           </button>
         </div>
       );
@@ -217,7 +220,7 @@ export function ImportDialog({
             onClick={handleClose}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Done
+            {t.common.done}
           </button>
         </div>
       );
@@ -230,14 +233,14 @@ export function ImportDialog({
             disabled={dialogState === 'importing'}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-50"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleConfirmImport}
             disabled={dialogState === 'importing' || nothingSelected}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
           >
-            {dialogState === 'importing' ? 'Importing...' : 'Import'}
+            {dialogState === 'importing' ? t.importExport.importing : t.common.import}
           </button>
         </div>
       );
@@ -268,7 +271,7 @@ export function ImportDialog({
       <Dialog
         isOpen={isOpen && dialogState !== 'selecting'}
         onClose={handleClose}
-        title={dialogState === 'success' ? 'Import Complete' : 'Import Backup'}
+        title={dialogState === 'success' ? t.importExport.importComplete : t.importExport.backupImport.title}
         maxWidth="max-w-xs"
         zIndex={60}
         footer={footerContent}
@@ -281,7 +284,7 @@ export function ImportDialog({
               {errorDetails && (
                 <details className="mt-2">
                   <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 dark:hover:text-gray-300">
-                    Show details
+                    {t.importExport.showDetails}
                   </summary>
                   <pre className="mt-1 text-xs text-gray-500 dark:text-gray-400 whitespace-pre-wrap break-all bg-gray-100 dark:bg-gray-900 p-2 rounded">
                     {errorDetails}
@@ -296,20 +299,20 @@ export function ImportDialog({
             <>
               <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                 <CheckCircle size={20} />
-                <span>Successfully imported:</span>
+                <span>{t.importExport.successfullyImported}</span>
               </div>
               <ul className="text-gray-600 dark:text-gray-400 ml-7 space-y-1">
                 {importResult.pinnedSitesCount > 0 && (
-                  <li>{importResult.pinnedSitesCount} pinned sites</li>
+                  <li>{t.importExport.pinnedSitesCount(importResult.pinnedSitesCount)}</li>
                 )}
                 {importResult.bookmarksCount > 0 && (
-                  <li>{importResult.bookmarksCount} bookmarks</li>
+                  <li>{t.importExport.bookmarksCount(importResult.bookmarksCount)}</li>
                 )}
                 {importResult.tabGroupsCount > 0 && (
-                  <li>{importResult.tabGroupsCount} tabs and groups</li>
+                  <li>{t.importExport.tabsAndGroupsCount(importResult.tabGroupsCount)}</li>
                 )}
                 {importResult.spacesCount > 0 && (
-                  <li>{importResult.spacesCount} spaces</li>
+                  <li>{t.importExport.spacesCount(importResult.spacesCount)}</li>
                 )}
               </ul>
             </>
@@ -320,14 +323,14 @@ export function ImportDialog({
             <>
               {/* Backup info */}
               <p className="text-gray-600 dark:text-gray-400">
-                Exported: {new Date(parsedData.backup.exportedAt).toLocaleDateString()}
+                {t.importExport.backupImport.exportedOn(new Date(parsedData.backup.exportedAt).toLocaleDateString(locale))}
               </p>
 
               {/* Single data type - Pinned sites only */}
               {parsedData.dataTypeCount === 1 && parsedData.hasPinnedSites && (
                 <div className="space-y-2">
                   <p className="text-gray-700 dark:text-gray-300">
-                    {parsedData.backup.pinnedSites?.length} pinned sites
+                    {t.importExport.pinnedSitesCount(parsedData.backup.pinnedSites?.length ?? 0)}
                   </p>
                   <div className="ml-2 space-y-1">
                     <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
@@ -338,7 +341,7 @@ export function ImportDialog({
                         onChange={() => setPinnedSitesMode('replace')}
                         disabled={dialogState === 'importing'}
                       />
-                      Replace existing pinned sites
+                      {t.importExport.backupImport.replaceExistingPinnedSites}
                     </label>
                     <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                       <input
@@ -348,7 +351,7 @@ export function ImportDialog({
                         onChange={() => setPinnedSitesMode('append')}
                         disabled={dialogState === 'importing'}
                       />
-                      Append to existing
+                      {t.importExport.appendToExisting}
                     </label>
                   </div>
                 </div>
@@ -358,7 +361,7 @@ export function ImportDialog({
               {parsedData.dataTypeCount === 1 && parsedData.hasTabGroups && (
                 <div className="space-y-2">
                   <p className="text-gray-700 dark:text-gray-300">
-                    {parsedData.backup.tabGroups?.length} tabs and groups
+                    {t.importExport.tabsAndGroupsCount(parsedData.backup.tabGroups?.length ?? 0)}
                   </p>
                   <div className="ml-2 space-y-1">
                     <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
@@ -369,7 +372,7 @@ export function ImportDialog({
                         onChange={() => setTabGroupsMode('replace')}
                         disabled={dialogState === 'importing'}
                       />
-                      Replace all tabs
+                      {t.importExport.backupImport.replaceAllTabs}
                     </label>
                     <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                       <input
@@ -379,7 +382,7 @@ export function ImportDialog({
                         onChange={() => setTabGroupsMode('append')}
                         disabled={dialogState === 'importing'}
                       />
-                      Append to existing
+                      {t.importExport.appendToExisting}
                     </label>
                   </div>
                 </div>
@@ -388,7 +391,7 @@ export function ImportDialog({
               {/* Bookmarks only - show mode selection */}
               {parsedData.dataTypeCount === 1 && parsedData.hasBookmarks && (
                 <div className="space-y-2">
-                  <p className="text-gray-700 dark:text-gray-300">Bookmarks</p>
+                  <p className="text-gray-700 dark:text-gray-300">{t.importExport.bookmarks}</p>
                   <div className="ml-2 space-y-2">
                     <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                       <input
@@ -398,7 +401,7 @@ export function ImportDialog({
                         onChange={() => setBookmarkMode('replace')}
                         disabled={dialogState === 'importing'}
                       />
-                      Replace all bookmarks
+                      {t.importExport.backupImport.replaceAllBookmarks}
                     </label>
                     <div>
                       <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
@@ -409,10 +412,10 @@ export function ImportDialog({
                           onChange={() => setBookmarkMode('folder')}
                           disabled={dialogState === 'importing'}
                         />
-                        Import to Other Bookmarks
+                        {t.importExport.backupImport.importToOtherBookmarks}
                       </label>
                       <p className="text-gray-500 dark:text-gray-500 ml-5 text-xs">
-                        Creates a subfolder with imported bookmarks
+                        {t.importExport.backupImport.importToOtherBookmarksHint}
                       </p>
                     </div>
                   </div>
@@ -423,7 +426,7 @@ export function ImportDialog({
               {parsedData.dataTypeCount === 1 && parsedData.hasSpaces && (
                 <div className="space-y-2">
                   <p className="text-gray-700 dark:text-gray-300">
-                    {parsedData.backup.spaces?.length} spaces
+                    {t.importExport.spacesCount(parsedData.backup.spaces?.length ?? 0)}
                   </p>
                   <div className="ml-2 space-y-1">
                     <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
@@ -434,7 +437,7 @@ export function ImportDialog({
                         onChange={() => setSpacesMode('replace')}
                         disabled={dialogState === 'importing'}
                       />
-                      Replace all spaces
+                      {t.importExport.replaceAllSpaces}
                     </label>
                     <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                       <input
@@ -444,7 +447,7 @@ export function ImportDialog({
                         onChange={() => setSpacesMode('append')}
                         disabled={dialogState === 'importing'}
                       />
-                      Append to existing
+                      {t.importExport.appendToExisting}
                     </label>
                   </div>
                 </div>
@@ -454,7 +457,7 @@ export function ImportDialog({
               {parsedData.dataTypeCount > 1 && (
                 <>
                   <p className="text-gray-500 dark:text-gray-400">
-                    Select data to import:
+                    {t.importExport.backupImport.selectData}
                   </p>
 
                   {/* Pinned sites import */}
@@ -468,7 +471,7 @@ export function ImportDialog({
                           className="rounded border-gray-300 dark:border-gray-600"
                           disabled={dialogState === 'importing'}
                         />
-                        Pinned sites ({parsedData.backup.pinnedSites?.length})
+                        {t.importExport.pinnedSitesWithCount(parsedData.backup.pinnedSites?.length ?? 0)}
                       </label>
                       {importPinnedSitesFlag && (
                         <div className="ml-5 mt-1 space-y-1">
@@ -480,7 +483,7 @@ export function ImportDialog({
                               onChange={() => setPinnedSitesMode('replace')}
                               disabled={dialogState === 'importing'}
                             />
-                            Replace existing
+                            {t.importExport.replaceExisting}
                           </label>
                           <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                             <input
@@ -490,7 +493,7 @@ export function ImportDialog({
                               onChange={() => setPinnedSitesMode('append')}
                               disabled={dialogState === 'importing'}
                             />
-                            Append to existing
+                            {t.importExport.appendToExisting}
                           </label>
                         </div>
                       )}
@@ -508,7 +511,7 @@ export function ImportDialog({
                           className="rounded border-gray-300 dark:border-gray-600"
                           disabled={dialogState === 'importing'}
                         />
-                        Bookmarks
+                        {t.importExport.bookmarks}
                       </label>
                       {importBookmarksFlag && (
                         <div className="ml-5 mt-1 space-y-2">
@@ -520,7 +523,7 @@ export function ImportDialog({
                               onChange={() => setBookmarkMode('replace')}
                               disabled={dialogState === 'importing'}
                             />
-                            Replace all bookmarks
+                            {t.importExport.backupImport.replaceAllBookmarks}
                           </label>
                           <div>
                             <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
@@ -531,10 +534,10 @@ export function ImportDialog({
                                 onChange={() => setBookmarkMode('folder')}
                                 disabled={dialogState === 'importing'}
                               />
-                              Import to Other Bookmarks
+                              {t.importExport.backupImport.importToOtherBookmarks}
                             </label>
                             <p className="text-gray-500 dark:text-gray-500 ml-5 text-xs">
-                              Creates a subfolder with imported bookmarks
+                              {t.importExport.backupImport.importToOtherBookmarksHint}
                             </p>
                           </div>
                         </div>
@@ -553,7 +556,7 @@ export function ImportDialog({
                           className="rounded border-gray-300 dark:border-gray-600"
                           disabled={dialogState === 'importing'}
                         />
-                        Tabs and groups ({parsedData.backup.tabGroups?.length})
+                        {t.importExport.tabsAndGroupsWithCount(parsedData.backup.tabGroups?.length ?? 0)}
                       </label>
                       {importTabGroups && (
                         <div className="ml-5 mt-1 space-y-1">
@@ -565,7 +568,7 @@ export function ImportDialog({
                               onChange={() => setTabGroupsMode('replace')}
                               disabled={dialogState === 'importing'}
                             />
-                            Replace all tabs
+                            {t.importExport.backupImport.replaceAllTabs}
                           </label>
                           <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                             <input
@@ -575,7 +578,7 @@ export function ImportDialog({
                               onChange={() => setTabGroupsMode('append')}
                               disabled={dialogState === 'importing'}
                             />
-                            Append to existing
+                            {t.importExport.appendToExisting}
                           </label>
                         </div>
                       )}
@@ -593,7 +596,7 @@ export function ImportDialog({
                           className="rounded border-gray-300 dark:border-gray-600"
                           disabled={dialogState === 'importing'}
                         />
-                        Spaces ({parsedData.backup.spaces?.length})
+                        {t.importExport.spacesWithCount(parsedData.backup.spaces?.length ?? 0)}
                       </label>
                       {importSpacesFlag && (
                         <div className="ml-5 mt-1 space-y-1">
@@ -605,7 +608,7 @@ export function ImportDialog({
                               onChange={() => setSpacesMode('replace')}
                               disabled={dialogState === 'importing'}
                             />
-                            Replace all spaces
+                            {t.importExport.replaceAllSpaces}
                           </label>
                           <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer">
                             <input
@@ -615,7 +618,7 @@ export function ImportDialog({
                               onChange={() => setSpacesMode('append')}
                               disabled={dialogState === 'importing'}
                             />
-                            Append to existing
+                            {t.importExport.appendToExisting}
                           </label>
                         </div>
                       )}

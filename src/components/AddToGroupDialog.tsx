@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 import { Plus } from 'lucide-react';
 import clsx from 'clsx';
 import { GROUP_COLORS, GROUP_COLOR_OPTIONS, COLOR_CIRCLE_SIZE } from '../utils/groupColors';
@@ -25,6 +26,7 @@ export const AddToGroupDialog = ({
   onClose
 }: AddToGroupDialogProps) =>
 {
+  const t = useT();
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState<chrome.tabGroups.ColorEnum>('blue');
@@ -64,19 +66,19 @@ export const AddToGroupDialog = ({
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title={isCreatingNew ? 'Create New Group' : 'Add to Group'}
+      title={isCreatingNew ? t.dialogs.createNewGroup : t.dialogs.addToGroup}
     >
       {isCreatingNew ? (
         <div className="p-3 space-y-3">
           <div>
             <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Group Name
+              {t.dialogs.groupName}
             </label>
             <input
               type="text"
               value={newGroupName}
               onChange={(e) => setNewGroupName(e.target.value)}
-              placeholder="Enter group name"
+              placeholder={t.dialogs.enterGroupName}
               autoFocus
               className="w-full px-2 py-1.5 border rounded-md dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
               onKeyDown={(e) =>
@@ -90,7 +92,7 @@ export const AddToGroupDialog = ({
           </div>
           <div>
             <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Color
+              {t.common.color}
             </label>
             <div className="flex gap-1.5 flex-wrap">
               {GROUP_COLOR_OPTIONS.map((opt) => (
@@ -105,8 +107,8 @@ export const AddToGroupDialog = ({
                       ? "border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800"
                       : "border-transparent"
                   )}
-                  title={opt.value}
-                  aria-label={`Select ${opt.value} color`}
+                  title={t.dialogs.groupColorNames[opt.value]}
+                  aria-label={t.dialogs.selectColorLabel(t.dialogs.groupColorNames[opt.value])}
                 />
               ))}
             </div>
@@ -116,14 +118,14 @@ export const AddToGroupDialog = ({
               onClick={() => setIsCreatingNew(false)}
               className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
             >
-              Back
+              {t.common.back}
             </button>
             <button
               onClick={handleCreateGroup}
               disabled={!newGroupName.trim()}
               className="px-3 py-1 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-md"
             >
-              Create
+              {t.common.create}
             </button>
           </div>
         </div>
@@ -140,7 +142,7 @@ export const AddToGroupDialog = ({
                 className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-200"
               >
                 <span className={clsx("w-3 h-3 rounded-full flex-shrink-0", colorStyle.dot)} />
-                <span className="truncate">{group.title || 'Unnamed Group'}</span>
+                <span className="truncate">{group.title || t.dialogs.unnamedGroup}</span>
               </button>
             );
           })}
@@ -151,7 +153,7 @@ export const AddToGroupDialog = ({
             className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-blue-600 dark:text-blue-400"
           >
             <Plus size={16} />
-            <span>Create New Group</span>
+            <span>{t.dialogs.createNewGroup}</span>
           </button>
         </div>
       )}

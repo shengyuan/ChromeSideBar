@@ -6,6 +6,7 @@ import { isEmoji } from '../utils/emoji';
 import { COLOR_CIRCLE_SIZE } from '../utils/groupColors';
 import { EMOJI_DATA, EMOJI_CATEGORIES } from '../data/emojiData';
 import { LayoutGrid } from 'lucide-react';
+import { useT, getMessages, type Messages } from '../i18n';
 
 // Representative emoji for each category (used as filter icons)
 const CATEGORY_ICONS: Record<string, string> = {
@@ -18,6 +19,19 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Objects': '💡',
   'Symbols': '💟',
   'Flags': '🚩',
+};
+
+// Message key of each category's tooltip; the category strings are data used for filtering
+const CATEGORY_LABEL_KEYS: Record<string, keyof Messages['iconPicker']['emojiCategories']> = {
+  'Smileys & Emotion': 'smileysEmotion',
+  'People & Body': 'peopleBody',
+  'Animals & Nature': 'animalsNature',
+  'Food & Drink': 'foodDrink',
+  'Travel & Places': 'travelPlaces',
+  'Activities': 'activities',
+  'Objects': 'objects',
+  'Symbols': 'symbols',
+  'Flags': 'flags',
 };
 
 // Color option interface - works for both hex colors and tab group colors
@@ -91,13 +105,14 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
   currentCustomColor,
   selectedEmoji,
   onEmojiSelect,
-  iconLabel = 'Icon',
-  colorLabel = 'Color',
+  iconLabel,
+  colorLabel,
   iconHeaderAction,
   iconGridHeight = DEFAULT_VISIBLE_HEIGHT,
   colorCircleSize = COLOR_CIRCLE_SIZE,
 }) =>
 {
+  const t = useT();
   const hasEmojiSupport = !!onEmojiSelect;
   const [activeTab, setActiveTab] = useState<IconTab>(selectedEmoji ? 'emoji' : 'icons');
   const [iconSearch, setIconSearch] = useState('');
@@ -124,7 +139,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
         })
         .catch(() =>
         {
-          setIconsError('Failed to load icons');
+          setIconsError(getMessages().notices.iconsLoadFailed);
           setIconsLoading(false);
         });
     }
@@ -243,7 +258,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
       <div>
         <div className="flex items-center justify-between mb-1">
           <label className="block font-medium text-gray-700 dark:text-gray-300">
-            {iconLabel}
+            {iconLabel ?? t.common.icon}
           </label>
           {iconHeaderAction}
         </div>
@@ -293,7 +308,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                   setEmojiSearch(val);
                 }
               }}
-              placeholder={activeTab === 'icons' ? 'Search icons...' : 'Search emoji...'}
+              placeholder={activeTab === 'icons' ? t.iconPicker.searchIconsPlaceholder : t.iconPicker.searchEmojiPlaceholder}
               className="w-full pl-7 pr-2 py-1 border rounded-md dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none text-[0.85em]"
             />
           </div>
@@ -311,7 +326,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                   : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               )}
             >
-              Icons
+              {t.iconPicker.iconsTab}
             </button>
             <button
               onClick={() => setActiveTab('emoji')}
@@ -322,7 +337,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                   : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
               )}
             >
-              Emoji
+              {t.iconPicker.emojiTab}
             </button>
           </div>
         )}
@@ -341,7 +356,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
             >
               {iconsLoading ? (
                 <div className="flex items-center justify-center h-16 text-gray-400 text-[0.85em]">
-                  Loading icons...
+                  {t.iconPicker.loadingIcons}
                 </div>
               ) : iconsError ? (
                 <div className="flex items-center justify-center h-16 text-gray-400 text-[0.85em]">
@@ -374,7 +389,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                   })}
                   {filteredIcons.length === 0 && !iconsLoading && (
                     <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-[0.85em]">
-                      No icons found
+                      {t.iconPicker.noIconsFound}
                     </div>
                   )}
                 </div>
@@ -396,7 +411,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                     ? "bg-blue-100 dark:bg-blue-900/50"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
-                title="All"
+                title={t.iconPicker.allCategories}
               >
                 <LayoutGrid size={14} className={clsx(
                   !selectedEmojiCategory
@@ -414,7 +429,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                       ? "bg-blue-100 dark:bg-blue-900/50"
                       : "hover:bg-gray-100 dark:hover:bg-gray-700 opacity-60 hover:opacity-100"
                   )}
-                  title={cat}
+                  title={t.iconPicker.emojiCategories[CATEGORY_LABEL_KEYS[cat]] ?? cat}
                 >
                   {CATEGORY_ICONS[cat]}
                 </button>
@@ -453,7 +468,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                 })}
                 {filteredEmojis.length === 0 && (
                   <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-[0.85em]">
-                    No emoji found
+                    {t.iconPicker.noEmojiFound}
                   </div>
                 )}
               </div>
@@ -466,7 +481,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
       <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 mb-1">
           <label className="font-medium text-gray-700 dark:text-gray-300">
-            {colorLabel}
+            {colorLabel ?? t.common.color}
           </label>
           <span className="text-[0.85em] text-gray-500 dark:text-gray-400">
             {colorOptions.find((o) => o.value === selectedColor)?.name || selectedColor}
@@ -487,7 +502,7 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
               )}
               style={option.style}
               title={option.name}
-              aria-label={`Select ${option.name} color`}
+              aria-label={t.iconPicker.selectColorAriaLabel(option.name)}
             />
           ))}
 
@@ -512,14 +527,14 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
                 value={customHexValue}
                 onChange={(e) => onCustomHexChange(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && onCustomHexSubmit()}
-                placeholder="#hex"
+                placeholder={t.iconPicker.hexPlaceholder}
                 className="w-16 px-1.5 py-0.5 text-[0.85em] border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
               />
               <button
                 onClick={onCustomHexSubmit}
                 className="px-1.5 py-0.5 text-[0.85em] bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-blue-500 rounded"
               >
-                Set
+                {t.iconPicker.setCustomColor}
               </button>
             </div>
           )}
@@ -530,17 +545,25 @@ export const IconColorPicker: React.FC<IconColorPickerProps> = ({
   );
 };
 
-// Preset color palette for pinned sites
-export const PINNED_SITE_COLORS: ColorOption[] = [
-  { name: 'Gray', value: '#6b7280', style: { backgroundColor: '#6b7280' } },
-  { name: 'Red', value: '#ef4444', style: { backgroundColor: '#ef4444' } },
-  { name: 'Orange', value: '#f97316', style: { backgroundColor: '#f97316' } },
-  { name: 'Yellow', value: '#eab308', style: { backgroundColor: '#eab308' } },
-  { name: 'Green', value: '#22c55e', style: { backgroundColor: '#22c55e' } },
-  { name: 'Teal', value: '#14b8a6', style: { backgroundColor: '#14b8a6' } },
-  { name: 'Blue', value: '#3b82f6', style: { backgroundColor: '#3b82f6' } },
-  { name: 'Purple', value: '#a855f7', style: { backgroundColor: '#a855f7' } },
-  { name: 'Pink', value: '#ec4899', style: { backgroundColor: '#ec4899' } },
+// Preset color palette for pinned sites; names come from messages at render time
+const PINNED_SITE_COLOR_VALUES: { nameKey: keyof Messages['iconPicker']['colors']; value: string }[] = [
+  { nameKey: 'gray', value: '#6b7280' },
+  { nameKey: 'red', value: '#ef4444' },
+  { nameKey: 'orange', value: '#f97316' },
+  { nameKey: 'yellow', value: '#eab308' },
+  { nameKey: 'green', value: '#22c55e' },
+  { nameKey: 'teal', value: '#14b8a6' },
+  { nameKey: 'blue', value: '#3b82f6' },
+  { nameKey: 'purple', value: '#a855f7' },
+  { nameKey: 'pink', value: '#ec4899' },
 ];
+
+/** Preset pinned site colors with names in the current UI language */
+export const getPinnedSiteColors = (t: Messages): ColorOption[] =>
+  PINNED_SITE_COLOR_VALUES.map(({ nameKey, value }) => ({
+    name: t.iconPicker.colors[nameKey],
+    value,
+    style: { backgroundColor: value },
+  }));
 
 export const DEFAULT_ICON_COLOR = '#6b7280';

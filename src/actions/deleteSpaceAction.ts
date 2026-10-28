@@ -3,6 +3,7 @@ import { truncateTitle } from '../utils/truncateTitle';
 import { Space } from '../contexts/SpacesContext';
 import { toChromeColor } from '../utils/groupColors';
 import { spaceManagerProxy } from '../managers/proxies/spaceManagerProxy';
+import { getMessages } from '../i18n';
 
 interface TabSnapshot
 {
@@ -56,7 +57,7 @@ export class DeleteSpaceAction implements UndoableAction
     const spaceIndex = currentSpaces.findIndex(s => s.id === this.spaceId);
     if (spaceIndex === -1)
     {
-      throw new Error(`Space "${this.spaceId}" not found`);
+      throw new Error(getMessages().actions.spaceNotFound(this.spaceId));
     }
 
     const space = currentSpaces[spaceIndex];
@@ -124,7 +125,7 @@ export class DeleteSpaceAction implements UndoableAction
     await spaceManagerProxy.updateSpaces(remaining);
 
     // Build description
-    this.description = `Deleted space "${truncateTitle(space.name)}"`;
+    this.description = getMessages().actions.deletedSpace(truncateTitle(space.name));
 
 
     if (import.meta.env.DEV)

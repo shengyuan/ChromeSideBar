@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { PinnedSite } from '../hooks/usePinnedSites';
 import { Space } from '../contexts/SpacesContext';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 
 export interface ExportOptions {
   exportPinnedSites: boolean;
@@ -44,6 +45,7 @@ export function ExportDialog({
   bookmarks,
   spaces,
 }: ExportDialogProps) {
+  const t = useT();
   const [exportPinnedSites, setExportPinnedSites] = useState(true);
   const [exportBookmarks, setExportBookmarks] = useState(true);
   const [exportTabGroups, setExportTabGroups] = useState(true);
@@ -128,7 +130,7 @@ export function ExportDialog({
       onClose();
     } catch (err) {
       console.error('Export failed:', err);
-      setError('Export failed. Please try again.');
+      setError(t.importExport.backupExport.failed);
     } finally {
       setIsExporting(false);
     }
@@ -137,7 +139,7 @@ export function ExportDialog({
   const nothingSelected = !exportPinnedSites && !exportBookmarks && !exportTabGroups && !exportSpaces;
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Export" maxWidth="max-w-xs" zIndex={60}>
+    <Dialog isOpen={isOpen} onClose={onClose} title={t.common.export} maxWidth="max-w-xs" zIndex={60}>
       <div className="p-3 space-y-3">
         {/* Pinned sites export */}
         <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -147,7 +149,7 @@ export function ExportDialog({
             onChange={(e) => setExportPinnedSites(e.target.checked)}
             className="rounded border-gray-300 dark:border-gray-600"
           />
-          Pinned sites ({pinnedSites.length})
+          {t.importExport.pinnedSitesWithCount(pinnedSites.length)}
         </label>
 
         {/* Bookmarks export */}
@@ -158,7 +160,7 @@ export function ExportDialog({
             onChange={(e) => setExportBookmarks(e.target.checked)}
             className="rounded border-gray-300 dark:border-gray-600"
           />
-          Bookmarks
+          {t.importExport.bookmarks}
         </label>
 
         {/* Tabs and groups export */}
@@ -169,7 +171,7 @@ export function ExportDialog({
             onChange={(e) => setExportTabGroups(e.target.checked)}
             className="rounded border-gray-300 dark:border-gray-600"
           />
-          Tabs and groups
+          {t.importExport.tabsAndGroups}
         </label>
 
         {/* Spaces export */}
@@ -180,7 +182,7 @@ export function ExportDialog({
             onChange={(e) => setExportSpaces(e.target.checked)}
             className="rounded border-gray-300 dark:border-gray-600"
           />
-          Spaces ({spaces.length})
+          {t.importExport.spacesWithCount(spaces.length)}
         </label>
 
         {/* Error message */}
@@ -195,14 +197,14 @@ export function ExportDialog({
             disabled={isExporting}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded disabled:opacity-50"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleExport}
             disabled={isExporting || nothingSelected}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
           >
-            {isExporting ? 'Exporting...' : 'Export'}
+            {isExporting ? t.importExport.backupExport.exporting : t.common.export}
           </button>
         </div>
       </div>

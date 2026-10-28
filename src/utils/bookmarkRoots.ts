@@ -7,6 +7,8 @@
 // can have e.g. '809' / '810' and no node '2' at all. There may also be zero,
 // one, or two folders of a type (a local copy and an account copy).
 
+import { getMessages } from '../i18n';
+
 type BookmarkNode = chrome.bookmarks.BookmarkTreeNode;
 
 export type RootFolderType = 'bookmarks-bar' | 'other' | 'mobile';
@@ -86,7 +88,13 @@ export async function requireRootFolder(type: RootFolderType): Promise<BookmarkN
   const folder = findRootFolder(await getRootFolders(), type);
   if (!folder)
   {
-    throw new Error(`Cannot find the "${DEFAULT_ROOT_FOLDER_TITLES[type]}" folder`);
+    const notices = getMessages().notices;
+    const folderNames: Record<RootFolderType, string> = {
+      'bookmarks-bar': notices.rootFolderNames.bookmarksBar,
+      'other': notices.rootFolderNames.other,
+      'mobile': notices.rootFolderNames.mobile,
+    };
+    throw new Error(notices.rootFolderNotFound(folderNames[type]));
   }
   return folder;
 }

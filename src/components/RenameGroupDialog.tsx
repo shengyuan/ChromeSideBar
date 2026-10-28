@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 
 export interface RenameGroupDialogProps
 {
@@ -16,6 +17,7 @@ export const RenameGroupDialog = ({
   onClose
 }: RenameGroupDialogProps) =>
 {
+  const t = useT();
   const [newName, setNewName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -39,18 +41,18 @@ export const RenameGroupDialog = ({
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Rename Group">
+    <Dialog isOpen={isOpen} onClose={onClose} title={t.dialogs.renameGroup}>
       <div className="p-3 space-y-3">
         <div>
           <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-            Group Name
+            {t.dialogs.groupName}
           </label>
           <input
             ref={inputRef}
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            placeholder="Enter group name"
+            placeholder={t.dialogs.enterGroupName}
             className="w-full px-2 py-1.5 border rounded-md dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
             onKeyDown={(e) =>
             {
@@ -66,13 +68,13 @@ export const RenameGroupDialog = ({
             onClick={onClose}
             className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleSave}
             className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
           >
-            Save
+            {t.common.save}
           </button>
         </div>
       </div>

@@ -5,6 +5,7 @@
 import { Space } from '../contexts/SpacesContext';
 import { tabSpaceRegistryProxy } from '../managers/proxies/tabSpaceRegistryProxy';
 import { toChromeColor } from './groupColors';
+import { getMessages } from '../i18n';
 
 // Keyed by "windowId:spaceName" - deduplicates concurrent getOrCreateSpaceGroup
 // calls for a group that doesn't exist yet (see resolveGroupId). Cleared once
@@ -89,18 +90,18 @@ export async function moveTabToSpace(
     if (spaceId === 'all')
     {
       await chrome.tabs.ungroup(tabId);
-      return { success: true, message: 'Removed from group' };
+      return { success: true, message: getMessages().notices.removedFromGroup };
     }
 
     const space = spaces.find(s => s.id === spaceId);
     if (!space)
     {
-      return { success: false, error: 'Space not found' };
+      return { success: false, error: getMessages().notices.spaceNotFound };
     }
 
     await getOrCreateSpaceGroup(tabId, space, windowId);
 
-    return { success: true, message: `Moved to ${space.name}` };
+    return { success: true, message: getMessages().notices.movedToSpace(space.name) };
   }
   catch (error)
   {
@@ -110,7 +111,7 @@ export async function moveTabToSpace(
     }
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : getMessages().notices.unknownError
     };
   }
 }

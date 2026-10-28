@@ -3,6 +3,7 @@ import { useBookmarks } from '../hooks/useBookmarks';
 import { useSpacesContext, Space } from '../contexts/SpacesContext';
 import { SpaceFolderIcon } from './SpaceFolderIcon';
 import { Dialog } from './Dialog';
+import { useT } from '../i18n';
 import { TreeRow } from './TreeRow';
 import { Folder, FolderPlus } from 'lucide-react';
 import { findRootFolder, getRootFolders, ROOT_NODE_ID } from '../utils/bookmarkRoots';
@@ -47,6 +48,7 @@ const FolderItem = ({
   getMatchingSpace
 }: FolderItemProps) =>
 {
+  const t = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const isFolder = !node.url;
   if (!isFolder) return null;
@@ -78,7 +80,7 @@ const FolderItem = ({
       <div data-folder-id={node.id}>
         <TreeRow
           depth={depth}
-          title={node.title || 'Untitled'}
+          title={node.title || t.common.untitled}
           icon={folderIcon}
           hasChildren={hasChildren || isCreatingHere}
           isExpanded={isExpanded || isCreatingHere}
@@ -137,7 +139,7 @@ const FolderItem = ({
                       onNewFolderCancel();
                     }
                   }}
-                  placeholder="New folder name"
+                  placeholder={t.dialogs.newFolderNamePlaceholder}
                   className="w-full px-1 py-0.5 border rounded dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-blue-500 outline-none"
                 />
               }
@@ -159,6 +161,7 @@ export const FolderPickerDialog = ({
   defaultFolderId
 }: FolderPickerDialogProps) =>
 {
+  const t = useT();
   const { bookmarks, createFolder, getBookmark, findFolderBySegments } = useBookmarks();
   const { spaces } = useSpacesContext();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -360,21 +363,21 @@ export const FolderPickerDialog = ({
             className="flex items-center gap-1 px-2 py-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FolderPlus size={14} />
-            New Folder
+            {t.dialogs.newFolder}
           </button>
           <div className="flex gap-2">
             <button
               onClick={onClose}
               className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
             >
-              Cancel
+              {t.common.cancel}
             </button>
             <button
               onClick={handleConfirm}
               disabled={creatingInFolderId !== null}
               className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Select
+              {t.dialogs.selectFolder}
             </button>
           </div>
         </div>

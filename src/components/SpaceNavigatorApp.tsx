@@ -3,9 +3,11 @@ import { Space, ALL_SPACE } from '../utils/spaceMessages';
 import { SpaceList, useSpaceListKeyboard, useSpaceListHighlight } from './SpaceList';
 import { spaceWindowStateProxy } from '../managers/proxies/spaceWindowStateProxy';
 import { spaceManagerProxy } from '../managers/proxies/spaceManagerProxy';
+import { useT } from '../i18n';
 
 export const SpaceNavigatorApp = () =>
 {
+  const t = useT();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [activeSpaceId, setActiveSpaceId] = useState<string>(ALL_SPACE.id);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -17,6 +19,12 @@ export const SpaceNavigatorApp = () =>
     const params = new URLSearchParams(window.location.search);
     return parseInt(params.get('windowId') || '0', 10);
   }, []);
+
+  // Popup window title (navigator.html's <title> is the English fallback) follows the UI language
+  useEffect(() =>
+  {
+    document.title = t.spaces.navigatorWindowTitle;
+  }, [t]);
 
   // Load spaces and current active space from background on mount
   useEffect(() =>
@@ -70,7 +78,7 @@ export const SpaceNavigatorApp = () =>
     <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-screen flex flex-col overflow-hidden select-none">
       {/* Header */}
       <div className="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Navigate to Space</span>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t.spaces.navigateToSpace}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto">

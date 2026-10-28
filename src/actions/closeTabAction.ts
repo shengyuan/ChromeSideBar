@@ -1,5 +1,6 @@
 import { UndoableAction } from './types';
 import { truncateTitle } from '../utils/truncateTitle';
+import { getMessages } from '../i18n';
 
 interface TabSnapshot
 {
@@ -104,12 +105,12 @@ export class CloseTabAction implements UndoableAction
     if (this.snapshots.length === 1)
     {
       const name = this.snapshots[0].title || this.snapshots[0].url;
-      this.description = `Closed "${truncateTitle(name)}"`;
+      this.description = getMessages().actions.closedTab(truncateTitle(name));
 
     }
     else
     {
-      this.description = `Closed ${this.snapshots.length} tabs`;
+      this.description = getMessages().actions.closedTabs(this.snapshots.length);
     }
 
     if (import.meta.env.DEV)

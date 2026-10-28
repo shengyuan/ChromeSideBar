@@ -6,10 +6,11 @@ import { PinnedSite, getFaviconUrl, fetchFaviconAsBase64 } from '../hooks/usePin
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import clsx from 'clsx';
 import * as ContextMenu from './menu/ContextMenu';
-import { IconColorPicker, PINNED_SITE_COLORS, DEFAULT_ICON_COLOR } from './IconColorPicker';
+import { IconColorPicker, getPinnedSiteColors, DEFAULT_ICON_COLOR } from './IconColorPicker';
 import { iconToDataUrl } from '../utils/iconify';
 import { createPinDragData, DropData, DropPosition, DragFormat, acceptsFormats } from '../types/dragDrop';
-import { buildDriftTooltip, PIN_GO_BACK_HINT } from '../utils/driftTooltip';
+import { buildDriftTooltip } from '../utils/driftTooltip';
+import { useT } from '../i18n';
 
 /**
  * Shared visual component for pinned icon rendering.
@@ -111,6 +112,7 @@ export const PinnedIcon = ({
   dropPosition,
 }: PinnedIconProps) =>
 {
+  const t = useT();
   const [showEditModal, setShowEditModal] = useState(false);
   const [editTitle, setEditTitle] = useState(site.title);
   const [editUrl, setEditUrl] = useState(site.url);
@@ -285,7 +287,7 @@ export const PinnedIcon = ({
       className="flex items-center text-[0.85em] text-blue-500 hover:text-blue-600"
     >
       <RotateCcw size={12} className="mr-1" />
-      Reset to site icon
+      {t.pinned.resetToSiteIcon}
     </button>
   );
 
@@ -309,7 +311,7 @@ export const PinnedIcon = ({
               liveTitle,
               // A pin button shows no title, so the tooltip is the only place to see where the tab went
               showNowLine: true,
-              goBackHint: PIN_GO_BACK_HINT,
+              goBackHint: t.notices.driftTooltip.pinGoBackHint,
             })}
             data-dnd-id={pinId}
             className={clsx(
@@ -377,10 +379,10 @@ export const PinnedIcon = ({
         <ContextMenu.Portal>
           <ContextMenu.Content>
             <ContextMenu.Item onSelect={() => onDuplicate(site.id)}>
-              <Copy size={14} className="mr-2" /> Duplicate
+              <Copy size={14} className="mr-2" /> {t.common.duplicate}
             </ContextMenu.Item>
             <ContextMenu.Item onSelect={handleCopyUrl}>
-              <Link size={14} className="mr-2" /> Copy URL
+              <Link size={14} className="mr-2" /> {t.common.copyUrl}
             </ContextMenu.Item>
             <ContextMenu.Separator />
             <ContextMenu.Item onSelect={() =>
@@ -393,22 +395,22 @@ export const PinnedIcon = ({
                 }
               });
             }}>
-              <ExternalLink size={14} className="mr-2" /> Open in New Tab
+              <ExternalLink size={14} className="mr-2" /> {t.common.openInNewTab}
             </ContextMenu.Item>
             <ContextMenu.Item onSelect={() => chrome.windows.create({ url: site.url })}>
-              <ExternalLink size={14} className="mr-2" /> Open in New Window
+              <ExternalLink size={14} className="mr-2" /> {t.common.openInNewWindow}
             </ContextMenu.Item>
             {isLoaded && (onMoveToNewWindow || onMoveToTabs) && (
               <>
                 <ContextMenu.Separator />
                 {onMoveToNewWindow && (
                   <ContextMenu.Item onSelect={() => onMoveToNewWindow(site.id)}>
-                    <ExternalLink size={14} className="mr-2" /> Move to New Window
+                    <ExternalLink size={14} className="mr-2" /> {t.pinned.contextMenu.moveToNewWindow}
                   </ContextMenu.Item>
                 )}
                 {onMoveToTabs && (
                   <ContextMenu.Item onSelect={() => onMoveToTabs(site.id)}>
-                    <ArrowRightFromLine size={14} className="mr-2" /> Move to Tabs
+                    <ArrowRightFromLine size={14} className="mr-2" /> {t.pinned.contextMenu.moveToTabs}
                   </ContextMenu.Item>
                 )}
               </>
@@ -417,25 +419,25 @@ export const PinnedIcon = ({
             {/* Saved URL: go back to it or replace it (when drifted), or edit it */}
             {isLoaded && isDrifted && onReset && (
               <ContextMenu.Item onSelect={() => onReset(site)}>
-                <RotateCcw size={14} className="mr-2" /> Back to Pinned URL
+                <RotateCcw size={14} className="mr-2" /> {t.pinned.contextMenu.backToPinnedUrl}
               </ContextMenu.Item>
             )}
             {isLoaded && isDrifted && liveUrl && onReplaceWithCurrent && (
               <ContextMenu.Item onSelect={() => onReplaceWithCurrent(site, liveUrl)}>
-                <Replace size={14} className="mr-2" /> Replace Pinned URL with Current
+                <Replace size={14} className="mr-2" /> {t.pinned.contextMenu.replacePinnedUrlWithCurrent}
               </ContextMenu.Item>
             )}
             <ContextMenu.Item onSelect={handleEdit}>
-              <Pencil size={14} className="mr-2" /> Edit...
+              <Pencil size={14} className="mr-2" /> {t.common.editEllipsis}
             </ContextMenu.Item>
             <ContextMenu.Separator />
             {isLoaded && onClose && (
               <ContextMenu.Item onSelect={() => onClose(site.id)}>
-                <X size={14} className="mr-2" /> Close Tab
+                <X size={14} className="mr-2" /> {t.pinned.contextMenu.closeTab}
               </ContextMenu.Item>
             )}
             <ContextMenu.Item danger onSelect={handleUnpin}>
-              <Trash size={14} className="mr-2" /> {isLoaded ? 'Close Tab and Unpin' : 'Unpin'}
+              <Trash size={14} className="mr-2" /> {isLoaded ? t.pinned.contextMenu.closeTabAndUnpin : t.pinned.contextMenu.unpin}
             </ContextMenu.Item>
           </ContextMenu.Content>
         </ContextMenu.Portal>
@@ -444,7 +446,7 @@ export const PinnedIcon = ({
       <Dialog
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Edit Pin"
+        title={t.pinned.editDialogTitle}
         maxWidth="max-w-sm"
         footer={
           <div className="flex justify-end space-x-2 p-4 pt-3">
@@ -452,13 +454,13 @@ export const PinnedIcon = ({
               onClick={() => setShowEditModal(false)}
               className="px-3 py-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
             >
-              Cancel
+              {t.common.cancel}
             </button>
             <button
               onClick={handleSaveEdit}
               className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
             >
-              Save
+              {t.common.save}
             </button>
           </div>
         }
@@ -466,7 +468,7 @@ export const PinnedIcon = ({
         <div className="px-4 space-y-3">
           <div>
             <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Title
+              {t.common.title}
             </label>
             <input
               type="text"
@@ -478,7 +480,7 @@ export const PinnedIcon = ({
           </div>
           <div>
             <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-              URL
+              {t.common.url}
             </label>
             <input
               type="text"
@@ -495,7 +497,7 @@ export const PinnedIcon = ({
             currentIconPreview={currentIconPreview}
             onIconSelect={handleSelectIcon}
             onColorSelect={handleColorChange}
-            colorOptions={PINNED_SITE_COLORS}
+            colorOptions={getPinnedSiteColors(t)}
             showCustomHex
             customHexValue={customHexInput}
             onCustomHexChange={setCustomHexInput}

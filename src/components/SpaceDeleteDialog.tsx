@@ -1,6 +1,7 @@
 import React from 'react';
 import { Dialog } from './Dialog';
 import { Space } from '../contexts/SpacesContext';
+import { useT } from '../i18n';
 
 interface SpaceDeleteDialogProps
 {
@@ -17,6 +18,7 @@ export const SpaceDeleteDialog: React.FC<SpaceDeleteDialogProps> = ({
   onConfirm,
 }) =>
 {
+  const t = useT();
   if (!space) return null;
 
   const handleConfirm = () =>
@@ -26,14 +28,14 @@ export const SpaceDeleteDialog: React.FC<SpaceDeleteDialogProps> = ({
   };
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} title="Delete Space" maxWidth="max-w-xs">
+    <Dialog isOpen={isOpen} onClose={onClose} title={t.spaces.deleteDialog.title} maxWidth="max-w-xs">
       <div className="flex flex-col">
         <div className="p-4">
           <p className="text-gray-700 dark:text-gray-300">
-            Are you sure you want to delete <strong>"{space.name}"</strong>?
+            {t.spaces.deleteDialog.confirm(space.name)}
           </p>
           <p className="mt-2 text-[0.85em] text-gray-500 dark:text-gray-400">
-            Your bookmarks will not be deleted. Tabs in this space will be closed.
+            {t.spaces.deleteDialog.details}
           </p>
         </div>
 
@@ -42,13 +44,13 @@ export const SpaceDeleteDialog: React.FC<SpaceDeleteDialogProps> = ({
             onClick={onClose}
             className="px-3 py-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             onClick={handleConfirm}
             className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md"
           >
-            Delete
+            {t.common.delete}
           </button>
         </div>
       </div>

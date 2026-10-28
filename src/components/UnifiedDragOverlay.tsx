@@ -17,6 +17,7 @@ import { GROUP_COLORS } from '../utils/groupColors';
 import { getFaviconUrl } from '../utils/favicon';
 import { getIcon } from '../utils/spaceIcons';
 import { PinnedIconVisual } from './PinnedIcon';
+import { useT, type Messages } from '../i18n';
 
 interface UnifiedDragOverlayProps
 {
@@ -97,6 +98,7 @@ const TabOverlay: React.FC<{ data: TabData; badges?: React.ReactNode; width?: nu
 // Tab group overlay - styled badge
 const TabGroupOverlay: React.FC<{ data: TabGroupData; badges?: React.ReactNode; width?: number }> = ({ data, badges, width }) =>
 {
+  const t = useT();
   const colorStyle = GROUP_COLORS[data.color || 'grey'] || GROUP_COLORS.grey;
 
   // Show space icon if group title matches a space, otherwise generic SquareStack
@@ -111,10 +113,10 @@ const TabGroupOverlay: React.FC<{ data: TabGroupData; badges?: React.ReactNode; 
         colorStyle.badge
       )}>
         {iconElement}
-        {data.title || 'Unnamed Group'}
+        {data.title || t.app.dragOverlay.unnamedGroup}
       </span>
       <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-        ({data.tabCount} {data.tabCount === 1 ? 'tab' : 'tabs'})
+        {t.app.dragOverlay.tabCount(data.tabCount)}
       </span>
     </div>
   );
@@ -164,9 +166,9 @@ const MultiDragWrapper: React.FC<{
 );
 
 // Create badge element for multi-drag
-const createMultiDragBadge = (count: number): React.ReactNode => (
+const createMultiDragBadge = (count: number, t: Messages): React.ReactNode => (
   <span className="text-xs font-medium text-blue-600 dark:text-blue-300 bg-blue-200 dark:bg-blue-800 px-1.5 py-0.5 rounded-full">
-    {count} items
+    {t.app.dragOverlay.itemCount(count)}
   </span>
 );
 
@@ -255,6 +257,7 @@ export const UnifiedDragOverlay: React.FC<UnifiedDragOverlayProps> = ({
   pinnedIconSize = DEFAULT_PINNED_ICON_SIZE,
 }) =>
 {
+  const t = useT();
   const dnd = useUnifiedDndOptional();
 
   if (!dnd || !dnd.activeDragData)
@@ -266,7 +269,7 @@ export const UnifiedDragOverlay: React.FC<UnifiedDragOverlayProps> = ({
   const count = multiDragCount ?? contextMultiDragCount;
 
   // Create badges for multi-drag
-  const badges = isMultiDrag && count > 1 ? createMultiDragBadge(count) : undefined;
+  const badges = isMultiDrag && count > 1 ? createMultiDragBadge(count, t) : undefined;
 
   // Use captured width from drag start, or undefined to fall back to default
   const width = activeDragWidth ?? undefined;

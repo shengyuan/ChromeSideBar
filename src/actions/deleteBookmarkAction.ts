@@ -1,6 +1,7 @@
 import { UndoableAction } from './types';
 import { truncateTitle } from '../utils/truncateTitle';
 import { runBatchOperation } from '../hooks/useBookmarks';
+import { getMessages } from '../i18n';
 
 type BookmarkSnapshot = chrome.bookmarks.BookmarkTreeNode;
 
@@ -86,15 +87,16 @@ export class DeleteBookmarkAction implements UndoableAction
     }
 
     // Build description
+    const messages = getMessages().actions;
     if (this.snapshots.length === 1)
     {
-      const name = this.snapshots[0].title || 'bookmark';
-      this.description = `Deleted "${truncateTitle(name)}"`;
+      const name = this.snapshots[0].title || messages.untitledBookmark;
+      this.description = messages.deletedBookmark(truncateTitle(name));
 
     }
     else
     {
-      this.description = `Deleted ${this.snapshots.length} bookmarks`;
+      this.description = messages.deletedBookmarks(this.snapshots.length);
     }
 
     // Close any live tabs associated with bookmarks being deleted

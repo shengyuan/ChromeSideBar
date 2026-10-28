@@ -310,7 +310,8 @@ export class TabHistoryManager implements RoutedManager, TabHistoryManagerApi
           tabId: entry.tabId,
           spaceId,
           index: i,
-          title: tab.title || '(no title)',
+          // Empty when the tab has no title; the sidebar shows a fallback in its UI language
+          title: tab.title || '',
           url: tab.url || tab.pendingUrl || '',
           favIconUrl: tab.favIconUrl || ''
         };
