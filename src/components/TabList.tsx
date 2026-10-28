@@ -35,6 +35,7 @@ export type ResolveBookmarkDropTarget = (
 ) => ExternalDropTarget | null;
 import { Toast } from './Toast';
 import { TreeRow } from './TreeRow';
+import { Favicon } from './Favicon';
 import { FolderPickerDialog } from './FolderPickerDialog';
 import { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 import { CloseTabAction } from '../actions/closeTabAction';
@@ -144,7 +145,7 @@ const TabRow = forwardRef<HTMLDivElement, DraggableTabProps>(({
 }, ref) => {
   const dndId = `tab-${tab.id}`;
   const icon = tab.favIconUrl ? (
-    <img src={tab.favIconUrl} alt="" className="w-4 h-4 flex-shrink-0" />
+    <Favicon src={tab.favIconUrl} className="w-4 h-4 flex-shrink-0" />
   ) : (
     <Globe className="w-4 h-4 text-gray-400 flex-shrink-0" />
   );

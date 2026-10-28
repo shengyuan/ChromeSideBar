@@ -19,6 +19,7 @@ import { BookmarkEditModal } from './BookmarkEditModal';
 import { BookmarkCreateFolderModal } from './BookmarkCreateFolderModal';
 import * as ContextMenu from './menu/ContextMenu';
 import { TreeRow } from './TreeRow';
+import { Favicon } from './Favicon';
 import { useInView } from '../hooks/useInView';
 import { SPEAKER_ICON_SIZE } from '../constants';
 import {
@@ -325,7 +326,7 @@ const BookmarkRow = forwardRef<HTMLDivElement, BookmarkRowProps>(({
   };
 
   const faviconImg = node.url ? (
-    <img
+    <Favicon
       src={getFaviconUrl(node.url)}
       alt=""
       className="w-4 h-4"

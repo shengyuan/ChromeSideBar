@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Globe, Pencil, Trash, X, RotateCcw, Play, Copy, ExternalLink, Link, ArrowRightFromLine, Replace } from 'lucide-react';
 import { Dialog } from './Dialog';
+import { Favicon } from './Favicon';
 import { PinnedSite, getFaviconUrl, fetchFaviconAsBase64 } from '../hooks/usePinnedSites';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import clsx from 'clsx';
@@ -40,7 +41,7 @@ export const PinnedIconVisual: React.FC<PinnedIconVisualProps & { emoji?: string
     {emoji ? (
       <span style={{ fontSize: iconSize }} className="leading-none">{emoji}</span>
     ) : favicon ? (
-      <img src={favicon} alt="" style={{ width: iconSize, height: iconSize }} />
+      <Favicon src={favicon} style={{ width: iconSize, height: iconSize }} />
     ) : (
       <Globe style={{ width: iconSize, height: iconSize }} className="text-gray-400" />
     )}
