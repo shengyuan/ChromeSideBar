@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { faviconTones } from '../utils/faviconTone';
+import { getFaviconUrl } from '../utils/favicon';
 
 /**
  * True when the favicon at src is mostly dark and would disappear on the dark theme's background.
@@ -43,23 +44,44 @@ const useIsDarkFavicon = (src: string): boolean =>
 
 type FaviconProps = React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
-  // Same icon from a readable source, used to judge its tone when src is a
-  // website URL (cross-origin, unreadable). Usually getFaviconUrl(pageUrl).
-  toneSrc?: string;
+  // The page the icon belongs to, when src is the website's own icon URL (e.g.
+  // tab.favIconUrl). Chrome's cached copy of the page's icon is then used to
+  // judge the tone (src is cross-origin, so unreadable) and is shown instead
+  // when src can't be loaded, e.g. a server sending
+  // Cross-Origin-Resource-Policy: same-origin.
+  pageUrl?: string;
 };
 
 /**
  * Favicon <img> that stays visible in the dark theme: mostly dark icons
  * (e.g. GitHub's black logo) are shown inverted there. The light theme is unchanged.
  */
-export const Favicon: React.FC<FaviconProps> = ({ src, toneSrc, className, alt = '', ...rest }) =>
+export const Favicon: React.FC<FaviconProps> = ({ src, pageUrl, className, alt = '', onError, ...rest }) =>
 {
-  const isDark = useIsDarkFavicon(toneSrc ?? src);
+  const cachedSrc = pageUrl ? getFaviconUrl(pageUrl) : undefined;
+  // The src that failed to load, so a new src gets its own try
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const showCached = !!cachedSrc && failedSrc === src;
+
+  const isDark = useIsDarkFavicon(cachedSrc ?? src);
+
+  const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) =>
+  {
+    // Fall back to Chrome's cached copy once; report errors after that
+    if (cachedSrc && !showCached && cachedSrc !== src)
+    {
+      setFailedSrc(src);
+      return;
+    }
+    onError?.(e);
+  };
+
   return (
     <img
-      src={src}
+      src={showCached ? cachedSrc : src}
       alt={alt}
       className={clsx(className, isDark && 'dark:invert dark:hue-rotate-180')}
+      onError={handleError}
       {...rest}
     />
   );

@@ -3,6 +3,7 @@ import { Globe, Volume2 } from 'lucide-react';
 import * as DropdownMenu from './menu/DropdownMenu';
 import { useFontSize } from '../contexts/FontSizeContext';
 import { useT } from '../i18n';
+import { Favicon } from './Favicon';
 
 export interface AudioTabsDropdownProps
 {
@@ -38,7 +39,7 @@ export const AudioTabsDropdown = ({
   const renderTabItem = (tab: chrome.tabs.Tab, showSpeakerIcon: boolean) =>
   {
     const icon = tab.favIconUrl ? (
-      <img src={tab.favIconUrl} alt="" className="w-4 h-4 flex-shrink-0" />
+      <Favicon src={tab.favIconUrl} pageUrl={tab.url} className="w-4 h-4 flex-shrink-0" />
     ) : (
       <Globe className="w-4 h-4 text-gray-400 flex-shrink-0" />
     );

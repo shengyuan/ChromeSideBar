@@ -6,6 +6,7 @@ import { useSpacesContext } from '../contexts/SpacesContext';
 import { tabHistoryManagerProxy } from '../managers/proxies/tabHistoryManagerProxy';
 import { TabHistoryItem } from '../managers/shared/tabHistoryManagerApi';
 import { useT } from '../i18n';
+import { Favicon } from './Favicon';
 
 interface ToolbarProps
 {
@@ -525,7 +526,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                     onSelect={() => handleHistoryItemClick(item.index)}
                   >
                     {item.favIconUrl ? (
-                      <img src={item.favIconUrl} alt="" className="w-4 h-4 flex-shrink-0 mr-2" />
+                      <Favicon src={item.favIconUrl} pageUrl={item.url} className="w-4 h-4 flex-shrink-0 mr-2" />
                     ) : (
                       <div className="w-4 h-4 flex-shrink-0 bg-gray-300 dark:bg-gray-600 rounded mr-2" />
                     )}
@@ -567,7 +568,7 @@ export const Toolbar = forwardRef<HTMLButtonElement, ToolbarProps>(({
                     onSelect={() => handleHistoryItemClick(item.index)}
                   >
                     {item.favIconUrl ? (
-                      <img src={item.favIconUrl} alt="" className="w-4 h-4 flex-shrink-0 mr-2" />
+                      <Favicon src={item.favIconUrl} pageUrl={item.url} className="w-4 h-4 flex-shrink-0 mr-2" />
                     ) : (
                       <div className="w-4 h-4 flex-shrink-0 bg-gray-300 dark:bg-gray-600 rounded mr-2" />
                     )}
