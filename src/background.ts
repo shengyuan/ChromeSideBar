@@ -3,6 +3,8 @@ import { FOLLOW_ACTIVE_TAB_KEY, parseFollowActiveTabMode } from './utils/followA
 import { isPinnedManagedTab, getTabAssociations, saveTabAssociationBackup, removeTabAssociationBackup, updateTabAssociationBackupIndices, removeWindowAssociationBackup, restoreTabAssociationBackup } from './utils/tabAssociations';
 import { toChromeColor } from './utils/groupColors';
 import { fetchFaviconAsBase64, getFaviconUrl } from './utils/favicon';
+import { SerialTaskQueue } from './utils/serialTaskQueue';
+import { moveTabToFrontOfGroup } from './utils/linkTabPlacement';
 import { parseManagerActionId, RoutedManager } from './managers/proxies/messageRouting';
 import { SpaceWindowStateManager } from './managers/impl/spaceWindowStateManager';
 import { TabSpaceRegistry } from './managers/impl/tabSpaceRegistry';
@@ -575,7 +577,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) =>
   }
 });
 
-// Queue for batching tab grouping to prevent race conditions
 interface TabGroupingRequest
 {
   tabId: number;
@@ -583,8 +584,11 @@ interface TabGroupingRequest
   spaceId: string;  // Target space, captured at queue time
   force: boolean;  // Move even if already in a different group (see queueTabForGrouping)
 }
-const groupingQueue: TabGroupingRequest[] = [];
-let isProcessingGroupingQueue = false;
+
+// Tab tasks (grouping tabs into their Space, placing link tabs) run one at a
+// time. This prevents races when several tabs are created rapidly, and makes a
+// link tab's move run after its grouping (grouping puts it at the group's end).
+const tabTaskQueue = new SerialTaskQueue();
 
 // Queue a tab for grouping - prevents race condition when multiple tabs created rapidly
 // spaceId is the target space to group into. If omitted (e.g. Cmd+T new tabs), falls
@@ -603,28 +607,8 @@ function queueTabForGrouping(tab: chrome.tabs.Tab, spaceId?: string): void
   const targetSpaceId = spaceId ?? spaceStateManager.getActiveSpace(tab.windowId);
   if (!targetSpaceId || targetSpaceId === 'all') return;
 
-  groupingQueue.push({ tabId: tab.id, windowId: tab.windowId, spaceId: targetSpaceId, force: spaceId !== undefined });
-  processGroupingQueue();
-}
-
-// Process queued tabs sequentially - prevents race condition
-async function processGroupingQueue(): Promise<void>
-{
-  if (isProcessingGroupingQueue) return;  // Already processing, items will be picked up
-  isProcessingGroupingQueue = true;
-
-  try
-  {
-    while (groupingQueue.length > 0)
-    {
-      const request = groupingQueue.shift()!;
-      await processGroupingRequest(request);
-    }
-  }
-  finally
-  {
-    isProcessingGroupingQueue = false;
-  }
+  const request: TabGroupingRequest = { tabId: tab.id, windowId: tab.windowId, spaceId: targetSpaceId, force: spaceId !== undefined };
+  tabTaskQueue.enqueue(() => processGroupingRequest(request));
 }
 
 // Process a single grouping request
@@ -721,6 +705,30 @@ chrome.tabs.onCreated.addListener(async (tab) =>
   //       e.g. user is in Space A. user hide side bar. user use Cmd+T to create new tab.
   //            new tab should be also under Space A.
   queueTabForGrouping(tab);
+});
+
+// Put a grouped tab opened from a link first in its group (e.g. at the top of
+// the Space's tab list), instead of next to the tab that opened it. Ungrouped
+// tabs stay where Chrome put them. Fires for links opened in a new tab or
+// window, not for Cmd+T, the New Tab button or tabs the extension creates.
+chrome.webNavigation.onCreatedNavigationTarget.addListener(async (details) =>
+{
+  await stateReady;
+
+  let tab: chrome.tabs.Tab;
+  try
+  {
+    tab = await chrome.tabs.get(details.tabId);
+  }
+  catch
+  {
+    return;  // Tab was already closed
+  }
+
+  // Queue grouping here too (a no-op if onCreated already grouped it), so the
+  // move is guaranteed to run after it whichever event arrives first
+  queueTabForGrouping(tab);
+  tabTaskQueue.enqueue(() => moveTabToFrontOfGroup(details.tabId));
 });
 
 // =============================================================================

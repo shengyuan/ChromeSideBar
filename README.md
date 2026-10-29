@@ -176,6 +176,7 @@ Gear icon in the bottom-left corner:
 - `sidePanel`, `bookmarks`, `tabs`, `tabGroups`: Core features
 - `storage`: Save your settings locally
 - `favicon`: Show website icons
+- `webNavigation`: Detect tabs opened from a link, to list them first in their group
 
 ## Full Changelog
 
