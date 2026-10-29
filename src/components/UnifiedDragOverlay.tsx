@@ -148,13 +148,13 @@ const MultiDragWrapper: React.FC<{
     {/* Stacked background layers */}
     {count > 2 && (
       <div
-        className="absolute w-full h-7 bg-blue-100 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-800"
+        className="absolute w-full h-8 bg-blue-100 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-800"
         style={{ top: 12, left: 12 }}
       />
     )}
     {count > 1 && (
       <div
-        className="absolute w-full h-7 bg-blue-100 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700"
+        className="absolute w-full h-8 bg-blue-100 dark:bg-blue-900 rounded border border-blue-200 dark:border-blue-700"
         style={{ top: 6, left: 6 }}
       />
     )}

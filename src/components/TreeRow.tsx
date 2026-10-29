@@ -75,7 +75,7 @@ export const TreeRow = forwardRef<HTMLDivElement, TreeRowProps>(({
       {...dndListeners}
       title={tooltip}
       className={clsx(
-        'group flex items-center h-7 rounded-md cursor-default select-none transition-colors relative pr-2 outline-none',
+        'group flex items-center h-8 rounded-md cursor-default select-none transition-colors relative pr-2 outline-none',
         // Selection style (brighter blue background)
         isSelected && 'bg-blue-200 dark:bg-blue-800/60 text-blue-800 dark:text-blue-50',
         // Active tab style (border ring, visually distinct from selection)
