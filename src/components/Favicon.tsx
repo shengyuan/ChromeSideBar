@@ -41,15 +41,20 @@ const useIsDarkFavicon = (src: string): boolean =>
   return analyzed?.src === src ? analyzed.isDark : false;
 };
 
-type FaviconProps = React.ImgHTMLAttributes<HTMLImageElement> & { src: string };
+type FaviconProps = React.ImgHTMLAttributes<HTMLImageElement> & {
+  src: string;
+  // Same icon from a readable source, used to judge its tone when src is a
+  // website URL (cross-origin, unreadable). Usually getFaviconUrl(pageUrl).
+  toneSrc?: string;
+};
 
 /**
  * Favicon <img> that stays visible in the dark theme: mostly dark icons
  * (e.g. GitHub's black logo) are shown inverted there. The light theme is unchanged.
  */
-export const Favicon: React.FC<FaviconProps> = ({ src, className, alt = '', ...rest }) =>
+export const Favicon: React.FC<FaviconProps> = ({ src, toneSrc, className, alt = '', ...rest }) =>
 {
-  const isDark = useIsDarkFavicon(src);
+  const isDark = useIsDarkFavicon(toneSrc ?? src);
   return (
     <img
       src={src}

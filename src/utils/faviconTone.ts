@@ -62,12 +62,6 @@ const loadImage = (src: string): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) =>
   {
     const image = new Image();
-    // A tab's favIconUrl is cross-origin: its pixels can only be read if the server allows CORS.
-    // Otherwise loading fails and the icon is left as is.
-    if (/^https?:/i.test(src))
-    {
-      image.crossOrigin = 'anonymous';
-    }
     image.onload = () => resolve(image);
     image.onerror = () => reject(new Error('Failed to load favicon'));
     image.src = src;
@@ -77,6 +71,14 @@ let sampleCanvas: HTMLCanvasElement | undefined;
 
 const analyzeIsDark = async (src: string): Promise<boolean> =>
 {
+  // A website's icon URL is cross-origin, so its pixels can't be read, and
+  // requesting it in CORS mode logs an error for every site that doesn't allow
+  // it. Callers analyze Chrome's cached copy instead (getFaviconUrl).
+  if (/^https?:/i.test(src))
+  {
+    return false;
+  }
+
   try
   {
     const image = await loadImage(src);
